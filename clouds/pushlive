@@ -1,0 +1,1 @@
+rsync -rave "ssh -i ~/security/eriknm.pem" index.html ubuntu@ec2-52-91-201-112.compute-1.amazonaws.com:/usr/share/nginx/html/erikdesjardins/starry.html

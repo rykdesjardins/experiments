@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body, html {
+                margin: 0;
+                padding: 0;
+
+                width: 100%;
+                height: 100%;
+
+                overflow : hidden;
+                background : #000;
+            }
+
+            #fps {
+                position: fixed;
+                z-index: 10;
+                bottom: 10px;
+                right : 10px;
+
+                font-family : "Helvetica", sans-serif;
+                font-size: 32px;
+
+                color: #FFF;
+                font-weight: bold;
+                opacity : 0.2;
+            }
+
+            #world {
+                opacity : 0;
+                transition: 5s all;
+            }
+
+            #world.ready {
+                opacity : 1;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="world"></canvas>
+        <div id="fps">Loading</div>
+
+        <script>
+            window.__fpsBox = document.getElementById("fps");
+            window.__background = "#024";
+            window.__backgroundShadow = "#012";
+            window.__frames = 0;
+
+            Math.hypo = function(a, b) {
+                return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
+            };
+
+            // Local Scope
+            (function() {
+                window.updateCanvas = (function(callback) {
+                    return window.requestAnimationFrame || window.webkitRequestAnimationFrame
+                        || window.mozRequestAnimationFrame || window.oRequestAnimationFrame
+                        || window.msRequestAnimationFrame || function(callback) {
+                            window.setTimeout(callback, 1000 / 60);
+                        };
+                })();
+
+                var gid = function(id) { return document.getElementById(id); }
+                var qs = function(sel) { return document.querySelector(sel); }
+                var qsa = function(sela) { return document.querySelectorAll(sela); }
+                var ce = function(el) { return document.createElement(el); }
+
+                var TEXTURE_DIR = "clouds/"
+                var CLOUD_FILE = "3.png";
+
+                var TOTAL_STARS;
+                var TOTAL_CLOUDS;
+                var BIGDIM;
+
+                var WORLD = gid('world');
+                var CTX = ctx = WORLD.getContext('2d');
+                var BG_RAD = ctx.createRadialGradient(
+                    window.innerWidth / 2, window.innerHeight / 2, 0, 
+                    window.innerWidth / 2, window.innerHeight / 2, Math.hypo(window.innerWidth, window.innerHeight) 
+                );
+                BG_RAD.addColorStop(0, window.__backgroundShadow);
+                BG_RAD.addColorStop(1, window.__background);
+
+                function updateCanvasSize() {
+                    WORLD.width = window.innerWidth;
+                    WORLD.height = window.innerHeight;
+
+                    BIGDIM = Math.hypo(window.innerWidth, window.innerHeight); 
+                    TOTAL_CLOUDS = Math.ceil(BIGDIM / 200);
+                    TOTAL_STARS = BIGDIM / 2;
+                    createStars();
+                    createClouds();
+                }
+
+                window.onresize = updateCanvasSize;
+
+                var CLOUDIMG;
+                var clouds = [];
+                var stars = []
+                
+                function Star() {
+                    this.left = Math.ceil(Math.random() * window.innerWidth);
+                    this.top = Math.ceil(Math.random() * window.innerHeight);
+                    this.size = Math.ceil(Math.random() * 2);
+
+                    this.glow = this.size > 1 ? Math.ceil(Math.random() * 12 + 2) : 0;
+                }
+
+                Star.prototype.update = function() {
+                    ctx.save();
+                    ctx.shadowBlur = this.glow;
+                    ctx.globalAlpha = Math.random() + 0.5;
+                    ctx.fillRect(this.left, this.top, this.size, this.size);
+                    ctx.restore();
+                }
+
+                function Cloud() {
+                    this.reborn();
+                }
+
+                Cloud.prototype.reborn = function(outsidecanvas) {
+                    this.top = -1200 + Math.random() * window.innerHeight * 2;
+
+                    this.opacity = Math.random();
+
+                    this.scale = Math.random() + 0.5;
+                    this.width = CLOUDIMG.width;
+                    this.height = CLOUDIMG.height;
+
+                    this.xvelocity = Math.random() / 2;
+
+                    this.lifespan = (Math.random() * 120) * 60;
+
+                    if (outsidecanvas) {
+                        this.left = -this.width * this.scale;
+                    } else {
+                        this.left = Math.random() * window.innerWidth - (window.innerWidth / 2);
+                    }
+                }
+
+                Cloud.prototype.update = function() {
+                    this.left += this.xvelocity;
+                    this.lifespan--;
+             
+                    if (this.left > WORLD.width) {
+                        return this.reborn(true);
+                    }
+
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.drawImage(CLOUDIMG, this.left, this.top, this.width * this.scale, this.height * this.scale);
+                    ctx.restore();
+                }
+
+                function fetchImageFile(done) {
+                    CLOUDIMG = new Image();
+                    CLOUDIMG.onload = done;
+                    CLOUDIMG.src = TEXTURE_DIR + CLOUD_FILE;
+                }
+
+                function createCloud() {
+                    clouds.push(new Cloud());
+                }
+
+                function createStar() {
+                    stars.push(new Star());   
+                }
+
+                function createClouds() {
+                    clouds = [];
+                    for (var i = 0; i < TOTAL_CLOUDS; i++) {
+                        createCloud();
+                    }
+                }
+
+                function createStars() {
+                    stars = [];
+                    for (var i = 0; i < TOTAL_STARS; i++) {
+                        createStar();
+                    }
+                }
+
+                function clear() {
+                    ctx.fillStyle = BG_RAD;
+                    ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+                }
+
+                function updateBackground() {
+                    ctx.save();
+                    ctx.shadowColor = "#FFF";
+                    ctx.fillStyle = "#FFF";
+                    for (var i = 0; i < TOTAL_STARS; i++) {
+                        stars[i].update();
+                    }
+                    ctx.restore();
+ 
+                    ctx.save();
+                    ctx.globalCompositeOperation = "overlay";
+                    for (var i = 0; i < clouds.length; i++) {
+                        clouds[i].update();
+                    }
+                    ctx.restore();
+
+                }   
+
+                function run(timestamp) {
+                    clear();
+                    updateBackground();
+
+                    updateCanvas(run);
+                   
+                    window.__lastSecondFrames++;
+                    window.__currentTimeStamp = timestamp;
+                }
+
+                fetchImageFile(function() {
+                    updateCanvasSize();
+                    WORLD.className = "ready";
+                    run(0);
+                });
+
+                window.__lastTimeStamp    = 0;
+                window.__currentTimeStamp = 0;
+                window.__lastSecondFrames = 0;
+
+                setInterval(function() {
+                    var fps = window.__lastSecondFrames;
+                    window.__lastSecondFrames = 0;
+
+                    window.__fpsBox.textContent = fps + " fps";
+                }, 1000);
+            })();
+        </script>
+    </body>
+</html>
