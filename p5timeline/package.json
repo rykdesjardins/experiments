@@ -6,11 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "babel --presets es2015 dev/experiment.js -o build/experiment.js",
-    "webpack" : "webpack"
+    "webpack": "webpack"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.16.2",
     "p5": "^0.5.16"
   },
   "devDependencies": {

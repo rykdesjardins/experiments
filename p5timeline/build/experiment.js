@@ -60,11 +60,33 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = {
+    canvas: {
+        width: 1920,
+        height: 1080
+    },
+
+    total: {
+        clouds: 12,
+        stars: 500
+    }
+};
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -94,7 +116,7 @@ try {
 module.exports = g;
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20071,20 +20093,148 @@ for(var i=0;i<=curveDetail;i++){coeff[0]=Math.pow(i/curveDetail,3)*0.5;coeff[1]=
  * </code>
  * </div>
  */p5.RendererGL.prototype.line=function(x0,y0,z0,x1,y1,z1){if(typeof x0!=='undefined'||typeof y0!=='undefined'||typeof z0!=='undefined'||typeof x1!=='undefined'||typeof y1!=='undefined'||typeof z1!=='undefined'){this.beginShape();this.vertex(x0,y0,z0);this.vertex(x1,y1,z1);this.endShape();}return this;};module.exports=p5;},{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46);});
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 2 */
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var images = {};
+
+var ImageStore = function () {
+    function ImageStore() {
+        _classCallCheck(this, ImageStore);
+    }
+
+    _createClass(ImageStore, null, [{
+        key: "registerImage",
+        value: function registerImage(filename, id) {
+            if (images[id]) {
+                throw new Error("Image with id " + id + " already registered");
+            }
+
+            images[id] = { filename: filename };
+        }
+    }, {
+        key: "loadSingle",
+        value: function loadSingle(p5, id, done) {
+            log('ImageStore', 'Loading image ' + images[id].filename + " with id " + id);
+            images[id].img = p5.loadImage(images[id].filename, function (img) {
+                images[id].size = p5.createVector(img.width, img.height);
+                done();
+            });
+        }
+    }, {
+        key: "loadImages",
+        value: function loadImages(p5, done) {
+            var keys = Object.keys(images);
+
+            var i = -1;
+            var nextImage = function nextImage() {
+                if (++i == keys.length) {
+                    log('ImageStore', 'Initialized ' + i + " images");
+                    return done && done();
+                }
+
+                ImageStore.loadSingle(p5, keys[i], nextImage);
+            };
+
+            log('ImageStore', 'Initializing image store');
+            nextImage();
+        }
+    }, {
+        key: "getImage",
+        value: function getImage(id) {
+            return images[id];
+        }
+    }]);
+
+    return ImageStore;
+}();
+
+module.exports = ImageStore;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _config = __webpack_require__(0);
+
+var _config2 = _interopRequireDefault(_config);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Thing = function () {
+    function Thing(p5, position) {
+        _classCallCheck(this, Thing);
+
+        this.p5 = p5;
+        this.size = p5.createVector(0, 0);
+        this.position = position || p5.createVector(0, 0);
+        this.velocity = p5.createVector(0, 0);
+        this.acceleration = p5.createVector(0, 0);
+        this.force = false;
+        this.wrap = false;
+    }
+
+    _createClass(Thing, [{
+        key: "update",
+        value: function update() {
+            if (this.force) {
+                this.velocity.add(this.acceleration);
+                this.position.add(this.velocity);
+            }
+
+            if (this.wrap && this.size.x != 0 && this.size.y != 0) {
+                if (this.position.x > _config2.default.canvas.width) {
+                    this.position.x = -this.size.x;
+                } else if (this.position.y > _config2.default.canvas.height) {
+                    this.position.y = -this.size.y;
+                }
+            }
+        }
+    }, {
+        key: "draw",
+        value: function draw() {
+            throw new Error("The draw() method must be overriden by the child class.");
+        }
+    }]);
+
+    return Thing;
+}();
+
+exports.default = Thing;
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(global) {
 
-var _log = __webpack_require__(3);
+var _log = __webpack_require__(6);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _timeline = __webpack_require__(4);
+var _timeline = __webpack_require__(7);
 
 var _timeline2 = _interopRequireDefault(_timeline);
 
@@ -20092,10 +20242,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 global.log = _log2.default;
 var __timeline = new _timeline2.default().start();
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 3 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20112,7 +20262,7 @@ exports.default = function (sender, message, level) {
 var LOG_SENDER_MAX_LENGTH = 18;
 
 /***/ }),
-/* 4 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20124,17 +20274,29 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _p = __webpack_require__(1);
+var _p = __webpack_require__(2);
 
 var _p2 = _interopRequireDefault(_p);
 
-__webpack_require__(5);
+__webpack_require__(8);
 
-__webpack_require__(6);
+__webpack_require__(9);
 
-var _config = __webpack_require__(7);
+var _config = __webpack_require__(0);
 
 var _config2 = _interopRequireDefault(_config);
+
+var _imagestore = __webpack_require__(3);
+
+var _imagestore2 = _interopRequireDefault(_imagestore);
+
+var _cloud = __webpack_require__(10);
+
+var _cloud2 = _interopRequireDefault(_cloud);
+
+var _star = __webpack_require__(11);
+
+var _star2 = _interopRequireDefault(_star);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20145,6 +20307,8 @@ var Timeline = function () {
         _classCallCheck(this, Timeline);
 
         global.addEventListener('resize', this.handleResize.bind(this));
+        this.ready = false;
+        this.secondframe = 0;
     }
 
     _createClass(Timeline, [{
@@ -20174,13 +20338,61 @@ var Timeline = function () {
             this.canvas = this.p5.createCanvas(_config2.default.canvas.width, _config2.default.canvas.height);
             this.canvasElement = this.canvas.canvas;
             this.handleResize();
+            this.clouds = [];
+            this.stars = [];
 
-            log('Timeline', 'Setup complete');
+            _imagestore2.default.registerImage('assets/cloud.png', 'fluffycloud');
+
+            _imagestore2.default.loadImages(this.p5, this.postsetup.bind(this));
+        }
+    }, {
+        key: 'assessFPS',
+        value: function assessFPS() {
+            document.title = "FPS - " + this.secondframe;
+            this.secondframe = 0;
+        }
+    }, {
+        key: 'countFPS',
+        value: function countFPS() {
+            this.fpsinterval = setInterval(this.assessFPS.bind(this), 1000);
+        }
+    }, {
+        key: 'postsetup',
+        value: function postsetup() {
+            log('Timeline', 'Setup complete. Running post setup');
+            for (var i = 0; i < _config2.default.total.clouds; i++) {
+                this.clouds.push(new _cloud2.default(this.p5));
+            }
+
+            for (var _i = 0; _i < _config2.default.total.stars; _i++) {
+                this.stars.push(new _star2.default(this.p5));
+            }
+
+            log('Timeline', 'Ready to rock!');
+            this.ready = true;
+            this.countFPS();
         }
     }, {
         key: 'draw',
         value: function draw() {
-            this.p5.ellipse(50, 50, 80, 80);
+            if (!this.ready) {
+                return;
+            }
+
+            this.p5.blendMode(this.p5.BLEND);
+            this.p5.background(0, 20, 40);
+
+            this.stars.forEach(function (x) {
+                return x.draw();
+            });
+
+            this.p5.blendMode(this.p5.OVERLAY);
+            this.clouds.forEach(function (x) {
+                x.update();
+                x.draw();
+            });
+
+            this.secondframe++;
         }
     }, {
         key: 'start',
@@ -20201,10 +20413,10 @@ var Timeline = function () {
 }();
 
 exports.default = Timeline;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 5 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20279,7 +20491,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 (function (root, factory) {
-  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
+  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
     factory(p5);
   }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else if ((typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object') factory(require('../p5'));else factory(root['p5']);
@@ -30630,7 +30842,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 6 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30666,7 +30878,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 (function (root, factory) {
-  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
+  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(2)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
     factory(p5);
   }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else if ((typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object') factory(require('../p5'));else factory(root['p5']);
@@ -33145,7 +33357,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 });
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -33154,12 +33366,114 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.default = {
-    canvas: {
-        width: 1920,
-        height: 1080
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _thing = __webpack_require__(4);
+
+var _thing2 = _interopRequireDefault(_thing);
+
+var _config = __webpack_require__(0);
+
+var _config2 = _interopRequireDefault(_config);
+
+var _imagestore = __webpack_require__(3);
+
+var _imagestore2 = _interopRequireDefault(_imagestore);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Cloud = function (_Thing) {
+    _inherits(Cloud, _Thing);
+
+    function Cloud(p5) {
+        _classCallCheck(this, Cloud);
+
+        var _this = _possibleConstructorReturn(this, (Cloud.__proto__ || Object.getPrototypeOf(Cloud)).call(this, p5, p5.createVector(p5.random(-1200, _config2.default.canvas.width), p5.random(-1200, _config2.default.canvas.height))));
+
+        _this.image = _imagestore2.default.getImage('fluffycloud');
+        _this.size = _this.image.size;
+
+        _this.force = true;
+        _this.wrap = true;
+        _this.velocity = _this.p5.createVector(p5.random(0.1, 1));
+        return _this;
     }
-};
+
+    _createClass(Cloud, [{
+        key: 'draw',
+        value: function draw() {
+            this.p5.image(this.image.img, this.position.x, this.position.y);
+        }
+    }]);
+
+    return Cloud;
+}(_thing2.default);
+
+exports.default = Cloud;
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _thing = __webpack_require__(4);
+
+var _thing2 = _interopRequireDefault(_thing);
+
+var _config = __webpack_require__(0);
+
+var _config2 = _interopRequireDefault(_config);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Star = function (_Thing) {
+    _inherits(Star, _Thing);
+
+    function Star(p5) {
+        _classCallCheck(this, Star);
+
+        var _this = _possibleConstructorReturn(this, (Star.__proto__ || Object.getPrototypeOf(Star)).call(this, p5, p5.createVector(p5.random(0, _config2.default.canvas.width), p5.random(0, _config2.default.canvas.height))));
+
+        _this.density = _this.p5.random(0.5, 2);
+        return _this;
+    }
+
+    _createClass(Star, [{
+        key: 'update',
+        value: function update() {/* Will never update */}
+    }, {
+        key: 'draw',
+        value: function draw() {
+            this.p5.noStroke();
+            this.p5.fill(255, 255, 255, Math.floor(this.p5.random(0, 255))).rect(this.position.x, this.position.y, this.density, this.density);
+        }
+    }]);
+
+    return Star;
+}(_thing2.default);
+
+exports.default = Star;
 
 /***/ })
 /******/ ]);

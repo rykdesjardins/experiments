@@ -1,11 +1,17 @@
 import p5js from 'p5';
 import 'p5/lib/addons/p5.sound';
 import 'p5/lib/addons/p5.dom';
-import config from './config.js';
+import config from './config';
+
+import ImageStore from './imagestore';
+import Cloud from './things/cloud';
+import Star from './things/star';
 
 class Timeline {
     constructor() {
         global.addEventListener('resize', this.handleResize.bind(this));
+        this.ready = false;
+        this.secondframe = 0;
     }
 
     handleResize() {
@@ -39,12 +45,53 @@ class Timeline {
         this.canvas = this.p5.createCanvas(config.canvas.width, config.canvas.height);
         this.canvasElement = this.canvas.canvas;
         this.handleResize();
+        this.clouds = [];
+        this.stars = [];
 
-        log('Timeline', 'Setup complete');
+        ImageStore.registerImage('assets/cloud.png', 'fluffycloud');
+        
+        ImageStore.loadImages(this.p5, this.postsetup.bind(this));
+    }
+
+    assessFPS() {
+        document.title = "FPS - " + this.secondframe;
+        this.secondframe = 0;
+    }
+
+    countFPS() {
+        this.fpsinterval = setInterval(this.assessFPS.bind(this), 1000);
+    }
+
+    postsetup() {
+        log('Timeline', 'Setup complete. Running post setup');
+        for (let i = 0; i < config.total.clouds; i++) {
+            this.clouds.push(new Cloud(this.p5));
+        }
+
+        for (let i = 0; i < config.total.stars; i++) {
+            this.stars.push(new Star(this.p5));
+        }
+
+        log('Timeline', 'Ready to rock!');
+        this.ready = true; 
+        this.countFPS();
     }
 
     draw() {
-        this.p5.ellipse(50, 50, 80, 80);
+        if (!this.ready) { return; }
+
+        this.p5.blendMode(this.p5.BLEND);
+        this.p5.background(0, 20, 40);
+
+        this.stars.forEach(x => x.draw());
+
+        this.p5.blendMode(this.p5.OVERLAY);
+        this.clouds.forEach(x => {
+            x.update(); 
+            x.draw();
+        });
+
+        this.secondframe++;
     }
 
     start() {
