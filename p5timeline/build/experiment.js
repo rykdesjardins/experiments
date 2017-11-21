@@ -68,6 +68,36 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
+
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var g;
+
+// This works in non-strict mode
+g = function () {
+	return this;
+}();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
 /* WEBPACK VAR INJECTION */(function(global) {var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var require;var require;var _typeof=typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"?function(obj){return typeof obj;}:function(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol&&obj!==Symbol.prototype?"symbol":typeof obj;};/*! p5.js v0.5.16 October 11, 2017 */(function(f){if(( false?"undefined":_typeof(exports))==="object"&&typeof module!=="undefined"){module.exports=f();}else if(true){!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (f),
 				__WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ?
 				(__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__),
@@ -20041,37 +20071,7 @@ for(var i=0;i<=curveDetail;i++){coeff[0]=Math.pow(i/curveDetail,3)*0.5;coeff[1]=
  * </code>
  * </div>
  */p5.RendererGL.prototype.line=function(x0,y0,z0,x1,y1,z1){if(typeof x0!=='undefined'||typeof y0!=='undefined'||typeof z0!=='undefined'||typeof x1!=='undefined'||typeof y1!=='undefined'||typeof z1!=='undefined'){this.beginShape();this.vertex(x0,y0,z0);this.vertex(x1,y1,z1);this.endShape();}return this;};module.exports=p5;},{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46);});
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var g;
-
-// This works in non-strict mode
-g = function () {
-	return this;
-}();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
-} catch (e) {
-	// This works if the window reference is available
-	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
 /* 2 */
@@ -20092,7 +20092,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 global.log = _log2.default;
 var __timeline = new _timeline2.default().start();
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
 /* 3 */
@@ -20116,7 +20116,7 @@ var LOG_SENDER_MAX_LENGTH = 18;
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-
+/* WEBPACK VAR INJECTION */(function(global) {
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -20124,13 +20124,17 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _p = __webpack_require__(0);
+var _p = __webpack_require__(1);
 
 var _p2 = _interopRequireDefault(_p);
 
 __webpack_require__(5);
 
 __webpack_require__(6);
+
+var _config = __webpack_require__(7);
+
+var _config2 = _interopRequireDefault(_config);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -20139,17 +20143,45 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Timeline = function () {
     function Timeline() {
         _classCallCheck(this, Timeline);
+
+        global.addEventListener('resize', this.handleResize.bind(this));
     }
 
     _createClass(Timeline, [{
+        key: 'handleResize',
+        value: function handleResize() {
+            var ratio = _config2.default.canvas.width / _config2.default.canvas.height;
+
+            this.canvasElement.style.position = "relative";
+            this.canvasElement.style.display = "block";
+
+            if (window.innerWidth >= _config2.default.canvas.width) {
+                this.canvasElement.style.width = global.innerHeight * ratio + "px";
+                this.canvasElement.style.height = "100%";
+                this.canvasElement.style.left = (global.innerWidth - global.innerHeight * ratio) / 2 + "px";
+                this.canvasElement.style.top = 0;
+            } else {
+                this.canvasElement.style.width = "100%";
+                this.canvasElement.style.height = global.innerWidth / ratio + "px";
+                this.canvasElement.style.left = 0;
+                this.canvasElement.style.top = (global.innerHeight - global.innerWidth / ratio) / 2 + "px";
+            }
+        }
+    }, {
         key: 'setup',
         value: function setup() {
             log('Timeline', 'P5 setup called back');
+            this.canvas = this.p5.createCanvas(_config2.default.canvas.width, _config2.default.canvas.height);
+            this.canvasElement = this.canvas.canvas;
+            this.handleResize();
+
             log('Timeline', 'Setup complete');
         }
     }, {
         key: 'draw',
-        value: function draw() {}
+        value: function draw() {
+            this.p5.ellipse(50, 50, 80, 80);
+        }
     }, {
         key: 'start',
         value: function start() {
@@ -20169,6 +20201,7 @@ var Timeline = function () {
 }();
 
 exports.default = Timeline;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(0)))
 
 /***/ }),
 /* 5 */
@@ -20246,7 +20279,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 (function (root, factory) {
-  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
+  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
     factory(p5);
   }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else if ((typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object') factory(require('../p5'));else factory(root['p5']);
@@ -30633,7 +30666,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
  */
 
 (function (root, factory) {
-  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(0)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
+  if (true) !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(1)], __WEBPACK_AMD_DEFINE_RESULT__ = function (p5) {
     factory(p5);
   }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));else if ((typeof exports === 'undefined' ? 'undefined' : _typeof(exports)) === 'object') factory(require('../p5'));else factory(root['p5']);
@@ -33110,6 +33143,23 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     this.data = undefined;
   };
 });
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = {
+    canvas: {
+        width: 1920,
+        height: 1080
+    }
+};
 
 /***/ })
 /******/ ]);
