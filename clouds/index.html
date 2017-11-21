@@ -181,7 +181,8 @@
                     }
                 }
 
-                function clear() {
+                function clear() { 
+                    ctx.globalAlpha = 1;
                     ctx.fillStyle = BG_RAD;
                     ctx.fillRect(0, 0, WORLD.width, WORLD.height);
                 }
