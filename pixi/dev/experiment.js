@@ -1,15 +1,19 @@
-import Pixi, { Application } from 'pixi.js';
+import log from './log';
+import * as PIXI from 'pixi.js'
 import Landing from './landing';
 import Config from './config';
 import Stage from './stage';
 
+global.frames = 0;
 class Experiment {
     constructor() {
         global.addEventListener('resize', this.handleResize.bind(this));
 
-        this.app = new Application(Config.width, Config.height, Config.appOption)
+        this.app = new PIXI.Application(Config.width, Config.height, Config.appOption)
         this.canvasElement = this.app.view;
-        this.stage = new Stage(this.app);
+        this.stage = new Stage(this.app, PIXI);
+
+        this.stage.addScene('landing', new Landing(this.app));
     }
 
     handleResize() {
@@ -31,10 +35,35 @@ class Experiment {
         }
     }
 
+    update() {
+        global.frames++;
+        this.stage.update();
+    }
+
+    draw() {
+        this.stage.draw();
+    }
+
+    bindFrameRate() {
+        log('Experiment', "Bound fps counter");
+        setInterval(() => {
+            global.fps = global.frames;
+            global.frames = 0;
+        }, 1000);
+    }
+
     run() {
-        document.body.appendChild(this.canvasElement);
+        document.body.appendChild(this.stage.renderer.view);
 
         this.handleResize();
+        this.bindFrameRate();
+        this.stage.setCurrentScene('landing', false, () => {
+            log('Experiment', 'Binding ticker with update function');
+            this.app.ticker.add(() => {
+                this.update();
+                this.draw();            
+            });
+        });
     }
 };
 

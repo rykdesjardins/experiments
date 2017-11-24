@@ -1,11 +1,12 @@
-import { loader } from 'pixi.js';
+import * as PIXI from 'pixi.js';
+import log from './log';
 
-let app;
 const assets = {};
+let mustload = false;
 
 class Asset {
-    constructor(filename, type) {
-        this.filename = filename;
+    constructor(file, type) {
+        this.file = file;
         this.type = type;
         this.loaded = false;
     }
@@ -17,13 +18,17 @@ class Asset {
 }
 
 class Static {
-    static setApp(papp) {
-        app = papp;
+    static add(name, file, type = "image") {
+        if (!assets[name]) { 
+            log('Static', 'Added static resource ' + file + ' with name ' + name);
+            assets[name] = new Asset(file, type);
+            PIXI.loader.add(name, file);
+            mustload = true;
+        }
     }
 
-    static add(name, file, type = "image") {
-        assets[name] = new Asset(file, type);
-        loader.add(name, file);
+    static getOne(name) {
+        return assets[name];
     }
 
     static free(name) {
@@ -32,11 +37,20 @@ class Static {
     }
     
     static load(done) {
-        loaded.load((loader, res) => {
+        if (!mustload) {
+            log('Static', 'Nothing to load, calling back');
+            return done();
+        }
+
+        log('Static', 'Calling loader load method');
+        PIXI.loader.load((loader, res) => {
             Object.keys(res).forEach(name => {
                 assets[name].setResource(res[name]);
             });
 
+            mustload = false;
+
+            log('Static', 'Done loading static assets, calling back');
             done();
         });
     }

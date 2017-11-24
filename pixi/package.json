@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.2",
+    "pixi-picture": "git+https://github.com/pixijs/pixi-picture.git",
     "pixi.js": "^4.6.1"
   },
   "devDependencies": {
