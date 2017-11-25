@@ -106,36 +106,6 @@ exports.default = {
 "use strict";
 
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-var g;
-
-// This works in non-strict mode
-g = function () {
-	return this;
-}();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1, eval)("this");
-} catch (e) {
-	// This works if the window reference is available
-	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
@@ -229,6 +199,148 @@ var Static = function () {
 exports.default = Static;
 
 /***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Vector = exports.Vector = function () {
+    function Vector() {
+        var x = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+        var y = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+        var vx = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+        var vy = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+        var ax = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
+        var ay = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
+
+        _classCallCheck(this, Vector);
+
+        this.x = x;
+        this.y = y;
+
+        this.vx = vx;
+        this.vy = vy;
+
+        this.ax = ax;
+        this.ay = ay;
+
+        this.mx = Number.MAX_SAFE_INTEGER;
+        this.my = Number.MAX_SAFE_INTEGER;
+        this.minx = Number.MIN_SAFE_INTEGER;
+        this.miny = Number.MIN_SAFE_INTEGER;
+
+        this.mvx = Number.MAX_SAFE_INTEGER;
+        this.mvy = Number.MAX_SAFE_INTEGER;
+        this.minvx = Number.MIN_SAFE_INTEGER;
+        this.minvy = Number.MIN_SAFE_INTEGER;
+    }
+
+    _createClass(Vector, [{
+        key: "setMax",
+        value: function setMax() {
+            var mx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : Number.MAX_SAFE_INTEGER;
+            var my = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Number.MAX_SAFE_INTEGER;
+
+            this.mx = mx;
+            this.my = my;
+        }
+    }, {
+        key: "setMin",
+        value: function setMin() {
+            var minx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : Number.MIN_SAFE_INTEGER;
+            var miny = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Number.MIN_SAFE_INTEGER;
+
+            this.minx = minx;
+            this.miny = miny;
+        }
+    }, {
+        key: "setMaxVelocity",
+        value: function setMaxVelocity() {
+            var mvx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : Number.MAX_SAFE_INTEGER;
+            var mvy = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Number.MAX_SAFE_INTEGER;
+
+            this.mvx = mvx;
+            this.mvy = mvy;
+        }
+    }, {
+        key: "setMinVelocity",
+        value: function setMinVelocity() {
+            var minvx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : Number.MIN_SAFE_INTEGER;
+            var minvy = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Number.MIN_SAFE_INTEGER;
+
+            this.minvx = minvx;
+            this.minvy = minvy;
+        }
+    }, {
+        key: "add",
+        value: function add(vector) {
+            this.x += vector.x;
+            this.y += vector.y;
+        }
+    }, {
+        key: "sub",
+        value: function sub(vector) {
+            this.x -= vector.x;
+            this.y -= vector.y;
+        }
+    }, {
+        key: "update",
+        value: function update() {
+            this.vx += this.ax;
+            this.vy += this.ay;
+
+            if (this.vx > this.mvx) {
+                this.vx = this.mvx;
+            } else if (this.vx < this.minvx) {
+                this.vx = this.minvx;
+            }
+
+            if (this.vy > this.mvy) {
+                this.vy = this.mvy;
+            } else if (this.vy < this.minvy) {
+                this.vy = this.minvy;
+            }
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            if (this.x > this.mx) {
+                this.x = this.mx;
+            } else if (this.x < this.minx) {
+                this.x = this.minx;
+            }
+
+            if (this.y > this.my) {
+                this.y = this.my;
+            } else if (this.y < this.miny) {
+                this.y = this.miny;
+            }
+
+            if (this.protoElem) {
+                this.protoElem.x = this.x;
+                this.protoElem.y = this.y;
+            }
+        }
+    }, {
+        key: "attach",
+        value: function attach(protoElem) {
+            this.protoElem = protoElem;
+        }
+    }]);
+
+    return Vector;
+}();
+
+/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -241,7 +353,7 @@ var _log = __webpack_require__(0);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _landing = __webpack_require__(5);
+var _landing = __webpack_require__(6);
 
 var _landing2 = _interopRequireDefault(_landing);
 
@@ -249,7 +361,7 @@ var _config = __webpack_require__(1);
 
 var _config2 = _interopRequireDefault(_config);
 
-var _stage = __webpack_require__(7);
+var _stage = __webpack_require__(8);
 
 var _stage2 = _interopRequireDefault(_stage);
 
@@ -266,7 +378,6 @@ var Experiment = function () {
         global.addEventListener('resize', this.handleResize.bind(this));
 
         this.app = new PIXI.Application(_config2.default.width, _config2.default.height, _config2.default.appOption);
-        this.canvasElement = this.app.view;
         this.stage = new _stage2.default(this.app, PIXI);
 
         this.stage.addScene('landing', new _landing2.default(this.app));
@@ -277,6 +388,7 @@ var Experiment = function () {
         value: function handleResize() {
             var ratio = _config2.default.width / _config2.default.height;
 
+            this.canvasElement = this.stage.renderer.view;
             this.canvasElement.style.position = "relative";
             this.canvasElement.style.display = "block";
 
@@ -308,9 +420,15 @@ var Experiment = function () {
         value: function bindFrameRate() {
             (0, _log2.default)('Experiment', "Bound fps counter");
             setInterval(function () {
-                global.fps = global.frames;
+                global.fps = global.frames * 2;
+                document.title = global.fps + " FPS";
                 global.frames = 0;
-            }, 1000);
+            }, 500);
+        }
+    }, {
+        key: 'pause',
+        value: function pause() {
+            this.app.ticker.stop();
         }
     }, {
         key: 'run',
@@ -319,9 +437,10 @@ var Experiment = function () {
 
             document.body.appendChild(this.stage.renderer.view);
 
-            this.handleResize();
             this.bindFrameRate();
             this.stage.setCurrentScene('landing', false, function () {
+                _this.handleResize();
+
                 (0, _log2.default)('Experiment', 'Binding ticker with update function');
                 _this.app.ticker.add(function () {
                     _this.update();
@@ -336,16 +455,50 @@ var Experiment = function () {
 
 ;
 
-var _experiment = new Experiment();
+global._experiment = new Experiment();
 _experiment.run();
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+
+document.addEventListener('keydown', function () {
+    _experiment.pause();
+});
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
+
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var g;
+
+// This works in non-strict mode
+g = function () {
+	return this;
+}();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1, eval)("this");
+} catch (e) {
+	// This works if the window reference is available
+	if ((typeof window === "undefined" ? "undefined" : _typeof(window)) === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -353,7 +506,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _scene = __webpack_require__(6);
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _scene = __webpack_require__(7);
 
 var _scene2 = _interopRequireDefault(_scene);
 
@@ -365,9 +520,11 @@ var _log = __webpack_require__(0);
 
 var _log2 = _interopRequireDefault(_log);
 
-var _static = __webpack_require__(3);
+var _static = __webpack_require__(2);
 
 var _static2 = _interopRequireDefault(_static);
+
+var _physics = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -378,7 +535,10 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var MAX_CLOUDS = 10;
-var MAX_STARS = 10000;
+var MAX_STARS = 20000;
+
+var SCENE_HEIGHT = 2500;
+var SCENE_WIDTH = _config2.default.width;
 
 var Landing = function (_Scene) {
     _inherits(Landing, _Scene);
@@ -395,15 +555,25 @@ var Landing = function (_Scene) {
             this.background = new PIXI.Graphics();
             this.background.beginFill(0x001122);
             this.background.moveTo(0, 0);
-            this.background.lineTo(0, _config2.default.height);
-            this.background.lineTo(_config2.default.width, _config2.default.height);
-            this.background.lineTo(_config2.default.width, 0);
+            this.background.lineTo(0, SCENE_HEIGHT);
+            this.background.lineTo(SCENE_WIDTH, SCENE_HEIGHT);
+            this.background.lineTo(SCENE_WIDTH, 0);
             this.background.lineTo(0, 0);
             this.background.endFill();
 
+            this.overlay = new PIXI.Graphics();
+            this.overlay.beginFill(0);
+            this.overlay.moveTo(0, 0);
+            this.overlay.lineTo(0, _config2.default.height);
+            this.overlay.lineTo(_config2.default.width, _config2.default.height);
+            this.overlay.lineTo(_config2.default.width, 0);
+            this.overlay.lineTo(0, 0);
+            this.overlay.endFill();
+            this.overlay.alpha = 1;
+
             this.stars = new Array(MAX_STARS);
             for (var i = 0; i < MAX_STARS; i++) {
-                this.stars[i] = { x: Math.random() * _config2.default.width, y: Math.random() * _config2.default.height, size: Math.random() * 2 };
+                this.stars[i] = { x: Math.random() * SCENE_WIDTH, y: Math.random() * SCENE_HEIGHT, size: Math.random() * 2 };
 
                 this.background.beginFill(0xFFFFFF, Math.random());
                 this.background.drawRect(this.stars[i].x, this.stars[i].y, this.stars[i].size, this.stars[i].size);
@@ -412,7 +582,7 @@ var Landing = function (_Scene) {
             this.container.addChild(this.background);
 
             this.container.filters = [new PIXI.filters.AlphaFilter()];
-            this.container.filterArea = new PIXI.Rectangle(0, 0, _config2.default.width, _config2.default.height);
+            this.container.filterArea = new PIXI.Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
 
             this.clouds = new Array(MAX_CLOUDS);
             (0, _log2.default)('Landing', 'Creating ' + MAX_CLOUDS + ' clouds');
@@ -420,31 +590,46 @@ var Landing = function (_Scene) {
                 this.clouds[_i] = new PIXI.extras.PictureSprite(_static2.default.getOne("fluffycloud").resource.texture);
                 this.clouds[_i].pluginName = "picture";
 
-                this.clouds[_i].x = Math.random() * _config2.default.width - this.clouds[_i].width / 2;
-                this.clouds[_i].y = Math.random() * _config2.default.height - this.clouds[_i].height / 2;
-                this.clouds[_i].vx = Math.random();
+                this.clouds[_i].vector = new _physics.Vector(Math.random() * SCENE_WIDTH - this.clouds[_i].width / 2, Math.random() * _config2.default.height - this.clouds[_i].height / 2, Math.random());
+                this.clouds[_i].vector.setMax(_config2.default.width);
+                this.clouds[_i].vector.attach(this.clouds[_i]);
                 this.clouds[_i].blendMode = PIXI.BLEND_MODES.OVERLAY;
                 this.clouds[_i].alpha = Math.random();
 
                 this.container.addChild(this.clouds[_i]);
             }
 
-            var clouds = this.clouds;
-            global.setBlend = function (b) {
-                clouds.forEach(function (x) {
-                    x.blendMode = b;
-                });
-            };
+            this.container.addChild(this.overlay);
+
+            this.container.vector.setMinVelocity(0, -15.7);
+            this.container.vector.setMaxVelocity(0, 0);
+            this.container.vector.setMin(0, -(SCENE_HEIGHT - _config2.default.height));
+
+            this.vars.halfpan = -(SCENE_HEIGHT - _config2.default.height) / 2;
+            this.vars.fading = true;
         }
     }, {
         key: 'update',
         value: function update() {
-            this.clouds.forEach(function (cloud) {
-                cloud.x += cloud.vx;
+            _get(Landing.prototype.__proto__ || Object.getPrototypeOf(Landing.prototype), 'update', this).call(this);
 
-                if (cloud.x > _config2.default.width) {
-                    cloud.x = -cloud.width;
+            if (this.vars.fading) {
+                this.overlay.alpha -= 0.02;
+                if (this.overlay.alpha <= 0) {
+                    this.overlay.alpha = 0;
+                    this.vars.fading = false;
+                    this.container.vector.ay = -.1;
                 }
+            }
+
+            if (this.container.vector.y < this.vars.halfpan) {
+                this.container.vector.ay = .1;
+            }
+
+            this.container.vector.update();
+
+            this.clouds.forEach(function (cloud) {
+                cloud.vector.update();
             });
         }
     }]);
@@ -453,10 +638,9 @@ var Landing = function (_Scene) {
 }(_scene2.default);
 
 exports.default = Landing;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -468,9 +652,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _static = __webpack_require__(3);
+var _static = __webpack_require__(2);
 
 var _static2 = _interopRequireDefault(_static);
+
+var _physics = __webpack_require__(3);
 
 var _log = __webpack_require__(0);
 
@@ -487,8 +673,20 @@ var Scene = function () {
         _classCallCheck(this, Scene);
 
         this.app = app;
+
         this.container = new PIXI.Container();
+        this.camera = new PIXI.Container();
+
+        this.container.vector = new _physics.Vector();
+        this.camera.vector = new _physics.Vector();
+
+        this.container.vector.attach(this.container);
+        this.camera.vector.attach(this.camera);
+
         this.dependencies = dependencies;
+
+        this.camera.addChild(this.container);
+        this.vars = {};
     }
 
     _createClass(Scene, [{
@@ -523,7 +721,7 @@ var Scene = function () {
 exports.default = Scene;
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -574,7 +772,7 @@ var Stage = function () {
     }, {
         key: 'draw',
         value: function draw() {
-            this.renderer.render(this.currentScene.container);
+            this.renderer.render(this.currentScene.camera);
         }
     }, {
         key: 'addScene',

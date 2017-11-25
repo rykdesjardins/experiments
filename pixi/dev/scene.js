@@ -1,11 +1,24 @@
 import Static from './static';
+import { Vector } from './physics';
 import log from './log';
 
 class Scene {
     constructor(app, dependencies = []) {
         this.app = app;
+
         this.container = new PIXI.Container();
+        this.camera = new PIXI.Container();
+
+        this.container.vector = new Vector();
+        this.camera.vector = new Vector();
+
+        this.container.vector.attach(this.container);
+        this.camera.vector.attach(this.camera);
+
         this.dependencies = dependencies;
+
+        this.camera.addChild(this.container);
+        this.vars = {};
     }
 
     addDependency(name, file, type = "image") {
@@ -13,7 +26,7 @@ class Scene {
     }
 
     setup() {
-
+        
     }
 
     update() {

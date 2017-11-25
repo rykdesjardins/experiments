@@ -23,7 +23,7 @@ class Stage {
     }
 
     draw() {
-        this.renderer.render(this.currentScene.container);
+        this.renderer.render(this.currentScene.camera);
     }
 
     addScene(name, scene, current) {

@@ -9,7 +9,6 @@ class Experiment {
         global.addEventListener('resize', this.handleResize.bind(this));
 
         this.app = new PIXI.Application(Config.width, Config.height, Config.appOption)
-        this.canvasElement = this.app.view;
         this.stage = new Stage(this.app, PIXI);
 
         this.stage.addScene('landing', new Landing(this.app));
@@ -18,6 +17,7 @@ class Experiment {
     handleResize() {
         const ratio = Config.width / Config.height;
 
+        this.canvasElement = this.stage.renderer.view;
         this.canvasElement.style.position = "relative";
         this.canvasElement.style.display = "block";
 
@@ -46,17 +46,23 @@ class Experiment {
     bindFrameRate() {
         log('Experiment', "Bound fps counter");
         setInterval(() => {
-            global.fps = global.frames;
+            global.fps = global.frames * 2;
+            document.title = global.fps + " FPS";
             global.frames = 0;
-        }, 1000);
+        }, 500);
+    }
+
+    pause() {
+        this.app.ticker.stop();
     }
 
     run() {
         document.body.appendChild(this.stage.renderer.view);
 
-        this.handleResize();
         this.bindFrameRate();
         this.stage.setCurrentScene('landing', false, () => {
+            this.handleResize();
+
             log('Experiment', 'Binding ticker with update function');
             this.app.ticker.add(() => {
                 this.update();
@@ -66,5 +72,7 @@ class Experiment {
     }
 };
 
-const _experiment = new Experiment();
+global._experiment = new Experiment();
 _experiment.run();
+
+document.addEventListener('keydown', () => { _experiment.pause(); });
