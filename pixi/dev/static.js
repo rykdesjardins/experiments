@@ -1,4 +1,3 @@
-import * as PIXI from 'pixi.js';
 import log from './log';
 
 const assets = {};

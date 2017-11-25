@@ -1,5 +1,4 @@
 import log from './log';
-import * as PIXI from 'pixi.js'
 import Landing from './landing';
 import Config from './config';
 import Stage from './stage';
@@ -67,4 +66,5 @@ class Experiment {
     }
 };
 
-new Experiment().run();
+const _experiment = new Experiment();
+_experiment.run();

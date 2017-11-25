@@ -1,6 +1,5 @@
 import Static from './static';
 import log from './log';
-import * as PIXI from 'pixi.js'
 
 class Scene {
     constructor(app, dependencies = []) {

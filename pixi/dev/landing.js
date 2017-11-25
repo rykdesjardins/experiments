@@ -2,10 +2,9 @@ import Scene from './scene';
 import Config from './config';
 import log from './log';
 import Static from './static';
-import * as PIXI from 'pixi.js'
 
-const MAX_CLOUDS = 20;
-const MAX_STARS = 5000;
+const MAX_CLOUDS = 10;
+const MAX_STARS = 10000;
 
 class Landing extends Scene {
     constructor(app) {
@@ -16,7 +15,7 @@ class Landing extends Scene {
 
     setup(stage) {
         this.background = new PIXI.Graphics();
-        this.background.beginFill(0x002244);
+        this.background.beginFill(0x001122);
         this.background.moveTo(0, 0);
         this.background.lineTo(0, Config.height);
         this.background.lineTo(Config.width, Config.height);
@@ -34,20 +33,20 @@ class Landing extends Scene {
 
         this.container.addChild(this.background);
    
-        this.container.filters = [new PIXI.filters.VoidFilter()];
+        this.container.filters = [new PIXI.filters.AlphaFilter()];
         this.container.filterArea = new PIXI.Rectangle(0, 0, Config.width, Config.height);
 
         this.clouds = new Array(MAX_CLOUDS);
         log('Landing', 'Creating ' + MAX_CLOUDS + ' clouds');
         for (let i = 0; i < MAX_CLOUDS; i++) {
-            this.clouds[i] = new PIXI.Sprite(Static.getOne("fluffycloud").resource.texture);
-            // this.clouds[i].pluginName = "picture";
+            this.clouds[i] = new PIXI.extras.PictureSprite(Static.getOne("fluffycloud").resource.texture);
+            this.clouds[i].pluginName = "picture";
 
             this.clouds[i].x = Math.random() * Config.width - this.clouds[i].width / 2;
             this.clouds[i].y = Math.random() * Config.height - this.clouds[i].height / 2;
             this.clouds[i].vx = Math.random();
-            this.clouds[i].blendMode = PIXI.BLEND_MODES.ADD;
-            this.clouds[i].alpha = Math.random() / 5;
+            this.clouds[i].blendMode = PIXI.BLEND_MODES.OVERLAY;
+            this.clouds[i].alpha = Math.random();
 
             this.container.addChild(this.clouds[i]);
         }

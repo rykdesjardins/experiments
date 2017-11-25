@@ -1,13 +1,8 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var PIXI;
 (function (PIXI) {
     var extras;
@@ -37,18 +32,16 @@ var PIXI;
         var PictureShader = (function (_super) {
             __extends(PictureShader, _super);
             function PictureShader(gl, vert, frag, tilingMode) {
-                var _this = this;
                 var lib = shaderLib[tilingMode];
-                _this = _super.call(this, gl, vert.replace(/%SPRITE_UNIFORMS%/gi, lib.vertUniforms)
+                _super.call(this, gl, vert.replace(/%SPRITE_UNIFORMS%/gi, lib.vertUniforms)
                     .replace(/%SPRITE_CODE%/gi, lib.vertCode), frag.replace(/%SPRITE_UNIFORMS%/gi, lib.fragUniforms)
-                    .replace(/%SPRITE_CODE%/gi, lib.fragCode)) || this;
-                _this.bind();
-                _this.tilingMode = tilingMode;
-                _this.tempQuad = new PIXI.Quad(gl);
-                _this.tempQuad.initVao(_this);
-                _this.uniforms.uColor = new Float32Array([1, 1, 1, 1]);
-                _this.uniforms.uSampler = [0, 1];
-                return _this;
+                    .replace(/%SPRITE_CODE%/gi, lib.fragCode));
+                this.bind();
+                this.tilingMode = tilingMode;
+                this.tempQuad = new PIXI.Quad(gl);
+                this.tempQuad.initVao(this);
+                this.uniforms.uColor = new Float32Array([1, 1, 1, 1]);
+                this.uniforms.uSampler = [0, 1];
             }
             PictureShader.blendVert = "\nattribute vec2 aVertexPosition;\nattribute vec2 aTextureCoord;\nattribute vec4 aColor;\n\nuniform mat3 projectionMatrix;\nuniform mat3 mapMatrix;\n\nvarying vec2 vTextureCoord;\nvarying vec2 vMapCoord;\n%SPRITE_UNIFORMS%\n\nvoid main(void)\n{\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    %SPRITE_CODE%\n    vMapCoord = (mapMatrix * vec3(aVertexPosition, 1.0)).xy;\n}\n";
             return PictureShader;
@@ -64,11 +57,24 @@ var PIXI;
         var HardLightShader = (function (_super) {
             __extends(HardLightShader, _super);
             function HardLightShader(gl, tilingMode) {
-                return _super.call(this, gl, extras.PictureShader.blendVert, overlayFrag, tilingMode) || this;
+                _super.call(this, gl, extras.PictureShader.blendVert, overlayFrag, tilingMode);
             }
             return HardLightShader;
         }(extras.PictureShader));
         extras.HardLightShader = HardLightShader;
+    })(extras = PIXI.extras || (PIXI.extras = {}));
+})(PIXI || (PIXI = {}));
+var PIXI;
+(function (PIXI) {
+    var extras;
+    (function (extras) {
+        function mapFilterBlendModesToPixi(gl, array) {
+            if (array === void 0) { array = []; }
+            array[PIXI.BLEND_MODES.OVERLAY] = [new extras.OverlayShader(gl, 0), new extras.OverlayShader(gl, 1), new extras.OverlayShader(gl, 2)];
+            array[PIXI.BLEND_MODES.HARD_LIGHT] = [new extras.HardLightShader(gl, 0), new extras.HardLightShader(gl, 1), new extras.HardLightShader(gl, 2)];
+            return array;
+        }
+        extras.mapFilterBlendModesToPixi = mapFilterBlendModesToPixi;
     })(extras = PIXI.extras || (PIXI.extras = {}));
 })(PIXI || (PIXI = {}));
 var PIXI;
@@ -80,7 +86,7 @@ var PIXI;
         var NormalShader = (function (_super) {
             __extends(NormalShader, _super);
             function NormalShader(gl, tilingMode) {
-                return _super.call(this, gl, normalVert, normalFrag, tilingMode) || this;
+                _super.call(this, gl, normalVert, normalFrag, tilingMode);
             }
             return NormalShader;
         }(extras.PictureShader));
@@ -95,7 +101,7 @@ var PIXI;
         var OverlayShader = (function (_super) {
             __extends(OverlayShader, _super);
             function OverlayShader(gl, tilingMode) {
-                return _super.call(this, gl, extras.PictureShader.blendVert, overlayFrag, tilingMode) || this;
+                _super.call(this, gl, extras.PictureShader.blendVert, overlayFrag, tilingMode);
             }
             return OverlayShader;
         }(extras.PictureShader));
@@ -119,7 +125,7 @@ var PIXI;
         var PictureRenderer = (function (_super) {
             __extends(PictureRenderer, _super);
             function PictureRenderer(renderer) {
-                return _super.call(this, renderer) || this;
+                _super.call(this, renderer);
             }
             PictureRenderer.prototype.onContextChange = function () {
                 var gl = this.renderer.gl;
@@ -396,9 +402,8 @@ var PIXI;
         var PictureSprite = (function (_super) {
             __extends(PictureSprite, _super);
             function PictureSprite(texture) {
-                var _this = _super.call(this, texture) || this;
-                _this.pluginName = 'picture';
-                return _this;
+                _super.call(this, texture);
+                this.pluginName = 'picture';
             }
             return PictureSprite;
         }(PIXI.Sprite));
@@ -412,26 +417,12 @@ var PIXI;
         var PictureTilingSprite = (function (_super) {
             __extends(PictureTilingSprite, _super);
             function PictureTilingSprite(texture) {
-                var _this = _super.call(this, texture) || this;
-                _this.pluginName = 'picture';
-                return _this;
+                _super.call(this, texture);
+                this.pluginName = 'picture';
             }
             return PictureTilingSprite;
         }(extras.TilingSprite));
         extras.PictureTilingSprite = PictureTilingSprite;
-    })(extras = PIXI.extras || (PIXI.extras = {}));
-})(PIXI || (PIXI = {}));
-var PIXI;
-(function (PIXI) {
-    var extras;
-    (function (extras) {
-        function mapFilterBlendModesToPixi(gl, array) {
-            if (array === void 0) { array = []; }
-            array[PIXI.BLEND_MODES.OVERLAY] = [new extras.OverlayShader(gl, 0), new extras.OverlayShader(gl, 1), new extras.OverlayShader(gl, 2)];
-            array[PIXI.BLEND_MODES.HARD_LIGHT] = [new extras.HardLightShader(gl, 0), new extras.HardLightShader(gl, 1), new extras.HardLightShader(gl, 2)];
-            return array;
-        }
-        extras.mapFilterBlendModesToPixi = mapFilterBlendModesToPixi;
     })(extras = PIXI.extras || (PIXI.extras = {}));
 })(PIXI || (PIXI = {}));
 //# sourceMappingURL=pixi-picture.js.map

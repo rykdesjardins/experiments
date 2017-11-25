@@ -1,4 +1,3 @@
-import * as PIXI from 'pixi.js'
 import Config from './config';
 
 class Stage {
@@ -12,6 +11,7 @@ class Stage {
     setCurrentScene(name, transition, done) {
         // TODO: Add second background scene to transition between old and new
         this.currentScene = this.scenes[name];
+        this.app.stage = this.currentScene.container;
         this.currentScene.load(() => {
             this.currentScene.setup();
             done();
