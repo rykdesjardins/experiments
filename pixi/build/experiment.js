@@ -438,6 +438,11 @@ var Experiment = function () {
             this.app.ticker.stop();
         }
     }, {
+        key: 'resume',
+        value: function resume() {
+            this.app.ticker.start();
+        }
+    }, {
         key: 'run',
         value: function run() {
             var _this = this;
@@ -468,7 +473,7 @@ downloadFonts(function () {
 });
 
 document.addEventListener('keydown', function () {
-    _experiment.pause();
+    _experiment.app.ticker.started ? _experiment.pause() : _experiment.resume();
 });
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
@@ -571,6 +576,8 @@ var Landing = function (_Scene) {
                 align: "cemter"
             });
 
+            this.createBridge();
+
             this.welcome.vector = new _physics.Vector(_config2.default.width / 2 - this.welcome.width / 2, _config2.default.height / 2 - 28);
             this.welcome.alpha = 0;
             this.welcome.vector.attach(this.welcome);
@@ -584,6 +591,23 @@ var Landing = function (_Scene) {
             this.vars.presenting = true;
 
             this.vars.texttimer = performance.now() + 5000;
+        }
+    }, {
+        key: 'createBridge',
+        value: function createBridge() {
+            var bridge = new PIXI.Graphics();
+            var pady = 400;
+
+            bridge.lineStyle(20, 0x79c4a1, 1);
+            bridge.moveTo(-100, 300 + pady);
+            bridge.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
+            bridge.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
+            bridge.quadraticCurveTo(1800, 200 + pady, 2100, 300 + pady);
+            bridge.moveTo(2100, 400 + pady);
+            bridge.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
+
+            this.container.addChild(bridge);
+            this.bridge = bridge;
         }
     }, {
         key: 'updateText',

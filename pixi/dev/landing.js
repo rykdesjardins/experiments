@@ -31,6 +31,8 @@ class Landing extends Scene {
             align : "cemter"
         });
 
+        this.createBridge();
+
         this.welcome.vector = new Vector(Config.width / 2 - this.welcome.width / 2, Config.height / 2 - 28);
         this.welcome.alpha = 0;
         this.welcome.vector.attach(this.welcome);
@@ -44,7 +46,25 @@ class Landing extends Scene {
         this.vars.presenting = true;
 
         this.vars.texttimer = performance.now() + 5000;
-    } 
+    }
+
+    createBridge() {
+        const bridge = new PIXI.Graphics();
+        const pady = 400;
+
+        bridge.lineStyle(20, 0x79c4a1, 1);
+        bridge.moveTo(-100, 300 + pady);
+        bridge.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
+        bridge.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
+        bridge.quadraticCurveTo(1800, 200 + pady, 2100, 300 + pady);
+        bridge.moveTo(2100, 400 + pady);
+        bridge.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
+
+        const peeksAt = [300, 1700];
+
+        this.container.addChild(bridge);
+        this.bridge = bridge;
+    }
 
     updateText() {
         if (this.vars.texttimer > performance.now()) {

@@ -59,9 +59,8 @@ class Experiment {
         }, 500);
     }
 
-    pause() {
-        this.app.ticker.stop();
-    }
+    pause()  { this.app.ticker.stop();  }
+    resume() { this.app.ticker.start(); }
 
     run() {
         document.body.appendChild(this.stage.renderer.view);
@@ -84,4 +83,4 @@ downloadFonts(() => {
     _experiment.run();
 });
 
-// document.addEventListener('keydown', () => { _experiment.pause(); });
+document.addEventListener('keydown', () => { _experiment.app.ticker.started ? _experiment.pause() : _experiment.resume(); });
