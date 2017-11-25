@@ -25,14 +25,11 @@ class Scene {
         this.dependencies.push({ name, file, type })
     }
 
-    setup() {
-        
-    }
+    setup()  { throw new Error("setup() method not implemented")  }
+    update() { throw new Error("update() method not implemented") }
 
-    update() {
-
-    }
-
+    // Can be overridden using super.load(() => { stuff; done(); })
+    // Might be useful for async setup
     load(done) {
         log('Scene', 'Dependencies are being converted to static assets');
         this.dependencies.forEach(dep => {

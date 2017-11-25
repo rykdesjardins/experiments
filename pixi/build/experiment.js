@@ -369,6 +369,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var downloadFonts = function downloadFonts(gotFont) {
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", gotFont);
+    oReq.open("GET", "assets/Source_Sans_Pro/ssplight.woff2");
+    oReq.send();
+};
+
 global.frames = 0;
 
 var Experiment = function () {
@@ -455,8 +462,10 @@ var Experiment = function () {
 
 ;
 
-global._experiment = new Experiment();
-_experiment.run();
+downloadFonts(function () {
+    global._experiment = new Experiment();
+    _experiment.run();
+});
 
 document.addEventListener('keydown', function () {
     _experiment.pause();
@@ -506,8 +515,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 var _scene = __webpack_require__(7);
 
 var _scene2 = _interopRequireDefault(_scene);
@@ -534,7 +541,7 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var MAX_CLOUDS = 10;
+var MAX_CLOUDS = 5;
 var MAX_STARS = 20000;
 
 var SCENE_HEIGHT = 2500;
@@ -546,90 +553,163 @@ var Landing = function (_Scene) {
     function Landing(app) {
         _classCallCheck(this, Landing);
 
-        return _possibleConstructorReturn(this, (Landing.__proto__ || Object.getPrototypeOf(Landing)).call(this, app, [{ name: "fluffycloud", file: "assets/cloud.png" }]));
+        return _possibleConstructorReturn(this, (Landing.__proto__ || Object.getPrototypeOf(Landing)).call(this, app, [{ name: "fluffycloud", file: "assets/cloud.png" }, { name: "pixel", file: "assets/pixel.png" }]));
     }
 
     _createClass(Landing, [{
         key: 'setup',
-        value: function setup(stage) {
-            this.background = new PIXI.Graphics();
-            this.background.beginFill(0x001122);
-            this.background.moveTo(0, 0);
-            this.background.lineTo(0, SCENE_HEIGHT);
-            this.background.lineTo(SCENE_WIDTH, SCENE_HEIGHT);
-            this.background.lineTo(SCENE_WIDTH, 0);
-            this.background.lineTo(0, 0);
-            this.background.endFill();
-
-            this.overlay = new PIXI.Graphics();
-            this.overlay.beginFill(0);
-            this.overlay.moveTo(0, 0);
-            this.overlay.lineTo(0, _config2.default.height);
-            this.overlay.lineTo(_config2.default.width, _config2.default.height);
-            this.overlay.lineTo(_config2.default.width, 0);
-            this.overlay.lineTo(0, 0);
-            this.overlay.endFill();
-            this.overlay.alpha = 1;
-
-            this.stars = new Array(MAX_STARS);
-            for (var i = 0; i < MAX_STARS; i++) {
-                this.stars[i] = { x: Math.random() * SCENE_WIDTH, y: Math.random() * SCENE_HEIGHT, size: Math.random() * 2 };
-
-                this.background.beginFill(0xFFFFFF, Math.random());
-                this.background.drawRect(this.stars[i].x, this.stars[i].y, this.stars[i].size, this.stars[i].size);
-            }
-
-            this.container.addChild(this.background);
-
-            this.container.filters = [new PIXI.filters.AlphaFilter()];
-            this.container.filterArea = new PIXI.Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-
+        value: function setup() {
             this.clouds = new Array(MAX_CLOUDS);
-            (0, _log2.default)('Landing', 'Creating ' + MAX_CLOUDS + ' clouds');
-            for (var _i = 0; _i < MAX_CLOUDS; _i++) {
-                this.clouds[_i] = new PIXI.extras.PictureSprite(_static2.default.getOne("fluffycloud").resource.texture);
-                this.clouds[_i].pluginName = "picture";
+            this.stars = new Array(MAX_STARS);
 
-                this.clouds[_i].vector = new _physics.Vector(Math.random() * SCENE_WIDTH - this.clouds[_i].width / 2, Math.random() * _config2.default.height - this.clouds[_i].height / 2, Math.random());
-                this.clouds[_i].vector.setMax(_config2.default.width);
-                this.clouds[_i].vector.attach(this.clouds[_i]);
-                this.clouds[_i].blendMode = PIXI.BLEND_MODES.OVERLAY;
-                this.clouds[_i].alpha = Math.random();
+            // Text
+            this.welcome = new PIXI.Text("WebGL experiment with Pixi, determination and a lot of caffeine.", {
+                fontFamily: "Source Sans Pro",
+                fill: 0xFFFFFF,
+                fontSize: "28px",
+                fontWeight: 300,
+                align: "cemter"
+            });
 
-                this.container.addChild(this.clouds[_i]);
-            }
+            this.welcome.vector = new _physics.Vector(_config2.default.width / 2 - this.welcome.width / 2, _config2.default.height / 2 - 28);
+            this.welcome.alpha = 0;
+            this.welcome.vector.attach(this.welcome);
+            this.welcome.vector.update();
 
-            this.container.addChild(this.overlay);
-
-            this.container.vector.setMinVelocity(0, -15.7);
-            this.container.vector.setMaxVelocity(0, 0);
-            this.container.vector.setMin(0, -(SCENE_HEIGHT - _config2.default.height));
+            this.container.addChild(this.welcome);
 
             this.vars.halfpan = -(SCENE_HEIGHT - _config2.default.height) / 2;
-            this.vars.fading = true;
+            this.vars.panning = false;
+            this.vars.fading = false;
+            this.vars.presenting = true;
+
+            this.vars.texttimer = performance.now() + 5000;
         }
     }, {
-        key: 'update',
-        value: function update() {
-            _get(Landing.prototype.__proto__ || Object.getPrototypeOf(Landing.prototype), 'update', this).call(this);
+        key: 'updateText',
+        value: function updateText() {
+            var _this2 = this;
 
-            if (this.vars.fading) {
-                this.overlay.alpha -= 0.02;
-                if (this.overlay.alpha <= 0) {
-                    this.overlay.alpha = 0;
-                    this.vars.fading = false;
-                    this.container.vector.ay = -.1;
+            if (this.vars.texttimer > performance.now()) {
+                this.welcome.alpha += 0.02;
+                if (this.welcome.alpha >= 1) {
+                    this.welcome.alpha = 1;
+                }
+            } else {
+                this.welcome.alpha -= 0.05;
+                if (this.welcome.alpha <= 0) {
+                    this.background = new PIXI.Graphics();
+                    this.background.beginFill(0x001122);
+                    this.background.moveTo(0, 0);
+                    this.background.lineTo(0, SCENE_HEIGHT);
+                    this.background.lineTo(SCENE_WIDTH, SCENE_HEIGHT);
+                    this.background.lineTo(SCENE_WIDTH, 0);
+                    this.background.lineTo(0, 0);
+                    this.background.endFill();
+
+                    this.overlay = new PIXI.Graphics();
+                    this.overlay.beginFill(0);
+                    this.overlay.moveTo(0, 0);
+                    this.overlay.lineTo(0, _config2.default.height);
+                    this.overlay.lineTo(_config2.default.width, _config2.default.height);
+                    this.overlay.lineTo(_config2.default.width, 0);
+                    this.overlay.lineTo(0, 0);
+                    this.overlay.endFill();
+                    this.overlay.alpha = 1;
+
+                    var mask = new PIXI.Graphics();
+                    mask.beginFill(0);
+                    mask.moveTo(0, 0);
+                    mask.lineTo(0, _config2.default.height);
+                    mask.lineTo(_config2.default.width, _config2.default.height);
+                    mask.lineTo(_config2.default.width, 0);
+                    mask.lineTo(0, 0);
+                    mask.endFill();
+                    this.container.addChild(mask);
+
+                    var startexture = _static2.default.getOne("pixel").resource.texture;
+                    this.starsContainer = new PIXI.particles.ParticleContainer(MAX_STARS, { alpha: true });
+                    this.starsContainer.width = SCENE_WIDTH;
+                    this.starsContainer.height = SCENE_HEIGHT;
+                    for (var i = 0; i < MAX_STARS; i++) {
+                        this.stars[i] = new PIXI.Sprite(startexture);
+                        this.stars[i].x = Math.random() * SCENE_WIDTH;
+                        this.stars[i].y = Math.random() * SCENE_HEIGHT;
+                        this.stars[i].width = Math.random() * 2;
+                        this.stars[i].height = this.stars[i].width;
+
+                        this.starsContainer.addChild(this.stars[i]);
+                    }
+
+                    (0, _log2.default)('Landing', 'Creating ' + MAX_CLOUDS + ' clouds');
+                    for (var _i = 0; _i < MAX_CLOUDS; _i++) {
+                        this.clouds[_i] = new PIXI.extras.PictureSprite(_static2.default.getOne("fluffycloud").resource.texture);
+                        this.clouds[_i].pluginName = "picture";
+
+                        this.clouds[_i].vector = new _physics.Vector(Math.random() * SCENE_WIDTH - this.clouds[_i].width / 2, Math.random() * _config2.default.height - this.clouds[_i].height / 2, Math.random());
+                        this.clouds[_i].vector.setMax(_config2.default.width);
+                        this.clouds[_i].vector.attach(this.clouds[_i]);
+                        this.clouds[_i].blendMode = PIXI.BLEND_MODES.OVERLAY;
+                        this.clouds[_i].alpha = Math.random();
+                    }
+
+                    this.container.vector.setMinVelocity(0, -15.7);
+                    this.container.vector.setMaxVelocity(0, 0);
+                    this.container.vector.setMin(0, -(SCENE_HEIGHT - _config2.default.height));
+
+                    this.container.removeChild(this.welcome);
+
+                    this.container.filters = [new PIXI.filters.AlphaFilter()];
+                    this.container.filterArea = new PIXI.Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
+                    this.container.addChild(this.background);
+                    this.container.addChild(this.starsContainer);
+                    this.clouds.forEach(function (x) {
+                        return _this2.container.addChild(x);
+                    });
+                    this.container.addChild(this.overlay);
+
+                    // End phase
+                    this.container.removeChild(mask);
+                    this.vars.presenting = false;
+                    this.vars.fading = true;
                 }
             }
+        }
+    }, {
+        key: 'updateFade',
+        value: function updateFade() {
+            this.overlay.alpha -= 0.02;
+            if (this.overlay.alpha <= 0) {
+                this.overlay.alpha = 0;
+                this.container.vector.ay = -.1;
 
+                // End phase
+                this.vars.panning = true;
+                this.vars.fading = false;
+            }
+        }
+    }, {
+        key: 'updatePan',
+        value: function updatePan() {
             if (this.container.vector.y < this.vars.halfpan) {
                 this.container.vector.ay = .1;
             }
 
             this.container.vector.update();
+        }
+    }, {
+        key: 'update',
+        value: function update() {
+            this.vars.presenting && this.updateText();
+            this.vars.fading && this.updateFade();
+            this.vars.panning && this.updatePan();
 
             this.clouds.forEach(function (cloud) {
                 cloud.vector.update();
+            });
+
+            this.stars.forEach(function (x) {
+                x.alpha = Math.random();
             });
         }
     }]);
@@ -698,10 +778,18 @@ var Scene = function () {
         }
     }, {
         key: 'setup',
-        value: function setup() {}
+        value: function setup() {
+            throw new Error("setup() method not implemented");
+        }
     }, {
         key: 'update',
-        value: function update() {}
+        value: function update() {
+            throw new Error("update() method not implemented");
+        }
+
+        // Can be overridden using super.load(() => { stuff; done(); })
+        // Might be useful for async setup
+
     }, {
         key: 'load',
         value: function load(done) {

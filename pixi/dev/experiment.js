@@ -3,6 +3,13 @@ import Landing from './landing';
 import Config from './config';
 import Stage from './stage';
 
+const downloadFonts = (gotFont) => {
+    var oReq = new XMLHttpRequest();
+    oReq.addEventListener("load", gotFont);
+    oReq.open("GET", "assets/Source_Sans_Pro/ssplight.woff2");
+    oReq.send();
+}
+
 global.frames = 0;
 class Experiment {
     constructor() {
@@ -72,7 +79,9 @@ class Experiment {
     }
 };
 
-global._experiment = new Experiment();
-_experiment.run();
+downloadFonts(() => {
+    global._experiment = new Experiment();
+    _experiment.run();
+});
 
-document.addEventListener('keydown', () => { _experiment.pause(); });
+// document.addEventListener('keydown', () => { _experiment.pause(); });
