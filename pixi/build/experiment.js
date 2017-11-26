@@ -540,6 +540,8 @@ var _physics = __webpack_require__(3);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -598,6 +600,7 @@ var Landing = function (_Scene) {
             var bridge = new PIXI.Graphics();
             var pady = 400;
 
+            // Contour
             bridge.lineStyle(20, 0x79c4a1, 1);
             bridge.moveTo(-100, 300 + pady);
             bridge.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
@@ -606,14 +609,49 @@ var Landing = function (_Scene) {
             bridge.moveTo(2100, 400 + pady);
             bridge.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
 
+            // Mid curve
+            bridge.lineStyle(10, 0x79c4a1, 1);
+            bridge.moveTo(-100, 400 + pady);
+            bridge.quadraticCurveTo(100, 400 + pady, 300, 250 + pady);
+            bridge.quadraticCurveTo(1000, 400 + pady, 1700, 250 + pady);
+            bridge.quadraticCurveTo(1900, 400 + pady, 2000, 400 + pady);
+
+            // Beams
+            bridge.moveTo(300, 400 + pady);
+            for (var i = 300; i <= 900; i += 100) {
+                bridge.lineTo(i, 100 + pady + (i - 300) / 10);
+                bridge.lineTo(i + 100, 400 + pady);
+            }
+
+            bridge.moveTo(1700, 400 + pady);
+            for (var _i = 1700; _i >= 1100; _i -= 100) {
+                bridge.lineTo(_i, 100 + pady + (1700 - _i) / 10);
+                bridge.lineTo(_i - 100, 400 + pady);
+            }
+            bridge.lineTo(1000, 200 + pady);
+
             this.container.addChild(bridge);
             this.bridge = bridge;
+
+            // Mask
+            var mask = new PIXI.Graphics();
+            mask.x = 0;
+            mask.y = 0;
+            mask.lineStyle(0);
+
+            mask.beginFill(0xFFFFFF, 0.5);
+            mask.moveTo(-100, 300 + pady);
+            mask.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
+            mask.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
+            mask.quadraticCurveTo(1800, 200 + pady, 2100, 300 + pady);
+            mask.lineTo(2100, 400 + pady);
+            mask.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
+
+            bridge.mask = mask;
         }
     }, {
         key: 'updateText',
         value: function updateText() {
-            var _this2 = this;
-
             if (this.vars.texttimer > performance.now()) {
                 this.welcome.alpha += 0.02;
                 if (this.welcome.alpha >= 1) {
@@ -622,6 +660,8 @@ var Landing = function (_Scene) {
             } else {
                 this.welcome.alpha -= 0.05;
                 if (this.welcome.alpha <= 0) {
+                    var _container;
+
                     this.background = new PIXI.Graphics();
                     this.background.beginFill(0x001122);
                     this.background.moveTo(0, 0);
@@ -666,15 +706,15 @@ var Landing = function (_Scene) {
                     }
 
                     (0, _log2.default)('Landing', 'Creating ' + MAX_CLOUDS + ' clouds');
-                    for (var _i = 0; _i < MAX_CLOUDS; _i++) {
-                        this.clouds[_i] = new PIXI.extras.PictureSprite(_static2.default.getOne("fluffycloud").resource.texture);
-                        this.clouds[_i].pluginName = "picture";
+                    for (var _i2 = 0; _i2 < MAX_CLOUDS; _i2++) {
+                        this.clouds[_i2] = new PIXI.extras.PictureSprite(_static2.default.getOne("fluffycloud").resource.texture);
+                        this.clouds[_i2].pluginName = "picture";
 
-                        this.clouds[_i].vector = new _physics.Vector(Math.random() * SCENE_WIDTH - this.clouds[_i].width / 2, Math.random() * _config2.default.height - this.clouds[_i].height / 2, Math.random());
-                        this.clouds[_i].vector.setMax(_config2.default.width);
-                        this.clouds[_i].vector.attach(this.clouds[_i]);
-                        this.clouds[_i].blendMode = PIXI.BLEND_MODES.OVERLAY;
-                        this.clouds[_i].alpha = Math.random();
+                        this.clouds[_i2].vector = new _physics.Vector(Math.random() * SCENE_WIDTH - this.clouds[_i2].width / 2, Math.random() * _config2.default.height - this.clouds[_i2].height / 2, Math.random());
+                        this.clouds[_i2].vector.setMax(_config2.default.width);
+                        this.clouds[_i2].vector.attach(this.clouds[_i2]);
+                        this.clouds[_i2].blendMode = PIXI.BLEND_MODES.OVERLAY;
+                        this.clouds[_i2].alpha = Math.random();
                     }
 
                     this.container.vector.setMinVelocity(0, -15.7);
@@ -685,12 +725,7 @@ var Landing = function (_Scene) {
 
                     this.container.filters = [new PIXI.filters.AlphaFilter()];
                     this.container.filterArea = new PIXI.Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-                    this.container.addChild(this.background);
-                    this.container.addChild(this.starsContainer);
-                    this.clouds.forEach(function (x) {
-                        return _this2.container.addChild(x);
-                    });
-                    this.container.addChild(this.overlay);
+                    (_container = this.container).addChild.apply(_container, [this.background, this.starsContainer].concat(_toConsumableArray(this.clouds), [this.overlay]));
 
                     // End phase
                     this.container.removeChild(mask);

@@ -52,6 +52,7 @@ class Landing extends Scene {
         const bridge = new PIXI.Graphics();
         const pady = 400;
 
+        // Contour
         bridge.lineStyle(20, 0x79c4a1, 1);
         bridge.moveTo(-100, 300 + pady);
         bridge.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
@@ -60,10 +61,45 @@ class Landing extends Scene {
         bridge.moveTo(2100, 400 + pady);
         bridge.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
 
-        const peeksAt = [300, 1700];
+        // Mid curve
+        bridge.lineStyle(10, 0x79c4a1, 1);
+        bridge.moveTo(-100, 400 + pady);
+        bridge.quadraticCurveTo(100, 400 + pady, 300, 250 + pady);
+        bridge.quadraticCurveTo(1000, 400 + pady, 1700, 250 + pady);
+        bridge.quadraticCurveTo(1900, 400 + pady, 2000, 400 + pady);
+
+        // Beams
+        bridge.moveTo(300, 400 + pady);
+        for (let i = 300; i <= 900; i+=100) {
+            bridge.lineTo(i, 100 + pady + (i - 300) / 10);
+            bridge.lineTo(i + 100, 400 + pady);
+        }
+
+        bridge.moveTo(1700, 400 + pady);
+        for (let i = 1700; i >= 1100; i-=100) {
+            bridge.lineTo(i, 100 + pady + (1700 - i) / 10);
+            bridge.lineTo(i - 100, 400 + pady);
+        }
+        bridge.lineTo(1000, 200 + pady);
 
         this.container.addChild(bridge);
         this.bridge = bridge;
+
+        // Mask
+        const mask = new PIXI.Graphics();
+        mask.x = 0;
+        mask.y = 0;
+        mask.lineStyle(0);
+
+        mask.beginFill(0xFFFFFF, 0.5);
+        mask.moveTo(-100, 300 + pady);
+        mask.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
+        mask.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
+        mask.quadraticCurveTo(1800, 200 + pady, 2100, 300 + pady);
+        mask.lineTo(2100, 400 + pady);
+        mask.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
+
+        bridge.mask = mask;
     }
 
     updateText() {
@@ -142,10 +178,7 @@ class Landing extends Scene {
 
                 this.container.filters = [new PIXI.filters.AlphaFilter()];
                 this.container.filterArea = new PIXI.Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-                this.container.addChild(this.background);
-                this.container.addChild(this.starsContainer);
-                this.clouds.forEach(x => this.container.addChild(x));
-                this.container.addChild(this.overlay);
+                this.container.addChild(this.background, this.starsContainer, ...this.clouds, this.overlay);
 
                 // End phase
                 this.container.removeChild(mask);
