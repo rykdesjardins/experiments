@@ -18,6 +18,8 @@ export class Vector {
         this.mvy = Number.MAX_SAFE_INTEGER;
         this.minvx = Number.MIN_SAFE_INTEGER;
         this.minvy = Number.MIN_SAFE_INTEGER;
+
+        this.forces = [];
     }
 
     setMax(mx = Number.MAX_SAFE_INTEGER, my = Number.MAX_SAFE_INTEGER) {
@@ -51,6 +53,8 @@ export class Vector {
     }
 
     update() {
+        if (this.frozen) { return; }
+
         this.vx += this.ax;
         this.vy += this.ay;
 
@@ -81,10 +85,20 @@ export class Vector {
             this.y = this.miny;
         }
 
+        this.forces.forEach(x => x.update(this));
+
         if (this.protoElem) {
             this.protoElem.x = this.x;
             this.protoElem.y = this.y;
         }
+    }
+
+    freeze() {
+        this.frozen = true;
+    }
+
+    addForce(force) {
+        this.forces.push(force);
     }
 
     attach(protoElem) {
@@ -92,3 +106,29 @@ export class Vector {
     }
 }
 
+export class Force {
+    static fromFunction(up) {
+        return { update : up };
+    }
+
+    constructor(vx = 0, vy = 0, ax = 0, ay = 0) {
+        this.vx = vx;
+        this.vy = vy;
+        this.ax = ax;
+        this.ay = ay;
+    }
+
+    update(vector) {
+        this.vx += this.ax;
+        this.vy += this.ay;
+
+        vector.x += this.vx;
+        vector.y += this.vy;
+    }
+}
+
+export class Range {
+    static random(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+}

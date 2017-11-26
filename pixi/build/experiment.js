@@ -242,6 +242,8 @@ var Vector = exports.Vector = function () {
         this.mvy = Number.MAX_SAFE_INTEGER;
         this.minvx = Number.MIN_SAFE_INTEGER;
         this.minvy = Number.MIN_SAFE_INTEGER;
+
+        this.forces = [];
     }
 
     _createClass(Vector, [{
@@ -295,6 +297,12 @@ var Vector = exports.Vector = function () {
     }, {
         key: "update",
         value: function update() {
+            var _this = this;
+
+            if (this.frozen) {
+                return;
+            }
+
             this.vx += this.ax;
             this.vy += this.ay;
 
@@ -325,10 +333,24 @@ var Vector = exports.Vector = function () {
                 this.y = this.miny;
             }
 
+            this.forces.forEach(function (x) {
+                return x.update(_this);
+            });
+
             if (this.protoElem) {
                 this.protoElem.x = this.x;
                 this.protoElem.y = this.y;
             }
+        }
+    }, {
+        key: "freeze",
+        value: function freeze() {
+            this.frozen = true;
+        }
+    }, {
+        key: "addForce",
+        value: function addForce(force) {
+            this.forces.push(force);
         }
     }, {
         key: "attach",
@@ -338,6 +360,57 @@ var Vector = exports.Vector = function () {
     }]);
 
     return Vector;
+}();
+
+var Force = exports.Force = function () {
+    _createClass(Force, null, [{
+        key: "fromFunction",
+        value: function fromFunction(up) {
+            return { update: up };
+        }
+    }]);
+
+    function Force() {
+        var vx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+        var vy = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+        var ax = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+        var ay = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
+        _classCallCheck(this, Force);
+
+        this.vx = vx;
+        this.vy = vy;
+        this.ax = ax;
+        this.ay = ay;
+    }
+
+    _createClass(Force, [{
+        key: "update",
+        value: function update(vector) {
+            this.vx += this.ax;
+            this.vy += this.ay;
+
+            vector.x += this.vx;
+            vector.y += this.vy;
+        }
+    }]);
+
+    return Force;
+}();
+
+var Range = exports.Range = function () {
+    function Range() {
+        _classCallCheck(this, Range);
+    }
+
+    _createClass(Range, null, [{
+        key: "random",
+        value: function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+    }]);
+
+    return Range;
 }();
 
 /***/ }),
@@ -560,7 +633,7 @@ var Landing = function (_Scene) {
     function Landing(app) {
         _classCallCheck(this, Landing);
 
-        return _possibleConstructorReturn(this, (Landing.__proto__ || Object.getPrototypeOf(Landing)).call(this, app, [{ name: "fluffycloud", file: "assets/cloud.png" }, { name: "fog", file: "assets/fog.png" }, { name: "pixel", file: "assets/pixel.png" }]));
+        return _possibleConstructorReturn(this, (Landing.__proto__ || Object.getPrototypeOf(Landing)).call(this, app, [{ name: "fluffycloud", file: "assets/cloud.png" }, { name: "fog", file: "assets/fog.png" }, { name: "blueglow", file: "assets/blueglow.png" }, { name: "glow", file: "assets/glow.png" }, { name: "pixel", file: "assets/pixel.png" }]));
     }
 
     _createClass(Landing, [{
@@ -568,6 +641,7 @@ var Landing = function (_Scene) {
         value: function setup() {
             this.clouds = new Array(MAX_CLOUDS);
             this.stars = new Array(MAX_STARS);
+            this.fwparticles = [];
 
             // Text
             this.welcome = new PIXI.Text("WebGL experiment with Pixi, determination and a lot of caffeine.", {
@@ -596,55 +670,71 @@ var Landing = function (_Scene) {
         value: function createBridge() {
             var bridgeContainer = new PIXI.Container();
             var bridge = new PIXI.Graphics();
+            var mask = new PIXI.Graphics();
             var pady = 1800;
 
-            // Contour
-            bridge.lineStyle(40, 0x181B18, 1);
-            bridge.moveTo(-100, 300 + pady);
-            bridge.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
-            bridge.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
-            bridge.quadraticCurveTo(1800, 200 + pady, 2100, 300 + pady);
-            bridge.moveTo(2100, 400 + pady);
-            bridge.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
+            [bridge, mask].forEach(function (bridge) {
+                // Contour
+                bridge.lineStyle(40, 0x181B18, 1);
+                bridge.moveTo(-100, 300 + pady);
+                bridge.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
+                bridge.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
+                bridge.quadraticCurveTo(1800, 200 + pady, 2100, 300 + pady);
+                bridge.moveTo(2100, 400 + pady);
+                bridge.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
 
-            // Mid curve
-            bridge.lineStyle(10, 0x181B18, 1);
-            bridge.moveTo(-100, 400 + pady);
-            bridge.quadraticCurveTo(100, 400 + pady, 300, 250 + pady);
-            bridge.quadraticCurveTo(1000, 400 + pady, 1700, 250 + pady);
-            bridge.quadraticCurveTo(1900, 400 + pady, 2000, 400 + pady);
+                // Mid curve
+                bridge.lineStyle(10, 0x181B18, 1);
+                bridge.moveTo(-100, 400 + pady);
+                bridge.quadraticCurveTo(100, 400 + pady, 300, 250 + pady);
+                bridge.quadraticCurveTo(1000, 400 + pady, 1700, 250 + pady);
+                bridge.quadraticCurveTo(1900, 400 + pady, 2000, 400 + pady);
 
-            // Beams
-            bridge.moveTo(300, 400 + pady);
-            for (var i = 300; i <= 900; i += 100) {
-                bridge.lineTo(i, 100 + pady + (i - 300) / 10);
-                bridge.lineTo(i + 100, 400 + pady);
-            }
+                // Beams
+                bridge.moveTo(300, 400 + pady);
+                for (var i = 300; i <= 900; i += 100) {
+                    bridge.lineTo(i, 100 + pady + (i - 300) / 10 + Math.sqrt(i) + 12);
+                    bridge.lineTo(i + 100, 385 + pady);
+                }
 
-            bridge.moveTo(1700, 400 + pady);
-            for (var _i = 1700; _i >= 1100; _i -= 100) {
-                bridge.lineTo(_i, 100 + pady + (1700 - _i) / 10);
-                bridge.lineTo(_i - 100, 400 + pady);
-            }
-            bridge.lineTo(1000, 200 + pady);
+                bridge.moveTo(1700, 400 + pady);
+                for (var _i = 1700; _i >= 1100; _i -= 100) {
+                    bridge.lineTo(_i, 100 + pady + (1650 - _i) / 10 + Math.sqrt(_i) + 12);
+                    bridge.lineTo(_i - 100, 385 + pady);
+                }
+                bridge.lineTo(1000, 200 + pady);
+            });
 
             bridgeContainer.addChild(bridge);
             this.bridge = bridge;
 
-            // Mask
-            var mask = new PIXI.Graphics();
-            mask.lineStyle(0);
-
-            mask.beginFill(0xFFFFFF, 0.5);
-            mask.moveTo(-100, 300 + pady);
-            mask.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
-            mask.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
-            mask.quadraticCurveTo(1800, 200 + pady, 2100, 300 + pady);
-            mask.lineTo(2100, 400 + pady);
-            mask.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
-
             bridge.mask = mask;
             bridgeContainer.addChild(mask);
+
+            var glow = new PIXI.extras.PictureSprite(_static2.default.getOne("glow").resource.texture);
+            glow.blendMode = PIXI.BLEND_MODES.OVERLAY;
+            glow.x = _config2.default.width / 2;
+            glow.y = SCENE_HEIGHT;
+            glow.anchor.x = .5;
+            glow.anchor.y = .5;
+            glow.scale.x = 8;
+            glow.scale.y = 4;
+            bridgeContainer.addChild(glow);
+
+            var bridgelights = [];
+            for (var i = 300; i > 1700; i += 100) {
+                var light = new PIXI.extras.PictureSprite(_static2.default.getOne('glow').resource.texture);
+                bridgelights.push(light);
+                light.anchor.x = .5;
+                light.anchor.y = .5;
+
+                light.x = i;
+                light.y = pady + 350;
+                light.scale.x = .3;
+                light.scale.y = .3;
+                light.blendMode = PIXI.BLEND_MODES.OVERLAY;
+                bridgeContainer.addChild(light);
+            }
 
             return bridgeContainer;
         }
@@ -706,31 +796,75 @@ var Landing = function (_Scene) {
                         this.clouds[_i2].alpha = Math.random();
                     }
 
-                    this.rippleSprite = new PIXI.Sprite(_static2.default.getOne("fog").resource.texture);
-                    this.rippleFilter = new PIXI.filters.DisplacementFilter(this.rippleSprite);
-
-                    this.rippleSprite.texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
-                    this.rippleSprite.vector = new _physics.Vector(0, 0, 1, 1);
-                    this.rippleSprite.vector.attach(this.rippleSprite);
-
-                    this.rippleContainer = new PIXI.Container();
-                    this.rippleContainer.addChild(this.starsContainer);
-                    this.rippleContainer.addChild(this.rippleSprite);
-                    this.rippleContainer.filters = [this.rippleFilter];
-                    this.rippleContainer.filterArea = new PIXI.Rectangle(0, _config2.default.height - 200, _config2.default.width, 200);
-
                     this.container.vector.setMinVelocity(0, -15.7);
                     this.container.vector.setMaxVelocity(0, 0);
                     this.container.vector.setMin(0, -(SCENE_HEIGHT - _config2.default.height));
 
                     this.container.filters = [new PIXI.filters.AlphaFilter()];
                     this.container.filterArea = new PIXI.Rectangle(0, 0, _config2.default.width, _config2.default.height);
-                    (_container = this.container).addChild.apply(_container, [this.background, this.rippleContainer, this.createBridge()].concat(_toConsumableArray(this.clouds), [this.overlay]));
+                    (_container = this.container).addChild.apply(_container, [this.background, this.starsContainer, this.createBridge()].concat(_toConsumableArray(this.clouds), [this.overlay]));
 
                     // End phase
                     this.vars.presenting = false;
                     this.vars.fading = true;
                 }
+            }
+        }
+    }, {
+        key: 'launchFirework',
+        value: function launchFirework() {
+            var PX = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 500;
+            var PY = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;
+            var CTN = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1000;
+            var velmod = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 35;
+            var pcolor = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0xdb9a4a;
+
+            var FIREWORK_COUNT = CTN;
+            this.firework = new PIXI.particles.ParticleContainer(FIREWORK_COUNT, { position: true, scale: true });
+            this.firework.width = SCENE_WIDTH;
+            this.firework.height = SCENE_HEIGHT;
+
+            var color = pcolor;
+            var texture = _static2.default.getOne('pixel').resource.texture;
+            for (var i = 0; i < FIREWORK_COUNT; i++) {
+                var p = new PIXI.Sprite(texture);
+                p.x = PX;
+                p.y = PY;
+                p.width = Math.random() * 6;
+                p.height = p.width;
+                p.tint = color;
+
+                var angle = Math.random() * Math.PI * 2;
+                var velocity = Math.cos(Math.random() * Math.PI / 2) * velmod;
+
+                p.vector = new _physics.Vector(PX, PY, Math.cos(angle) * velocity, Math.sin(angle) * velocity);
+                p.vector.attach(p);
+                p.vector.addForce(_physics.Force.fromFunction(function (vector) {
+                    vector.y += .1;
+                    vector.vx *= .95;
+                    vector.vy *= .95;
+                    vector.protoElem.scale.x *= .99;
+                    vector.protoElem.scale.y *= .99;
+                }));
+
+                this.fwparticles.push(p);
+                this.firework.addChild(p);
+            }
+
+            this.container.addChildAt(this.firework, 2);
+        }
+    }, {
+        key: 'fireworksCheck',
+        value: function fireworksCheck() {
+            if (!this.vars.fw1 && this.container.vector.y < this.vars.halfpan) {
+                this.vars.fw1 = true;
+                this.launchFirework(450, 1000, 1000);
+            } else if (!this.vars.fw2 && this.container.vector.y < this.vars.halfpan - 200) {
+                this.vars.fw2 = true;
+                this.launchFirework(1450, 1300, 1000, 25, 0xc854f9);
+            } else if (!this.vars.fw3 && this.container.vector.y < this.vars.halfpan - 500) {
+                this.vars.fw3 = true;
+                this.launchFirework(1000, 1500, 1000, 42, 0x59f96f);
             }
         }
     }, {
@@ -766,10 +900,14 @@ var Landing = function (_Scene) {
                 cloud.vector.update();
             });
 
+            this.fireworksCheck();
             this.stars.forEach(function (x) {
                 x.alpha = Math.random();
             });
             this.rippleSprite && this.rippleSprite.vector.update();
+            this.fwparticles.forEach(function (x) {
+                return x.vector.update();
+            });
         }
     }]);
 
