@@ -560,7 +560,7 @@ var Landing = function (_Scene) {
     function Landing(app) {
         _classCallCheck(this, Landing);
 
-        return _possibleConstructorReturn(this, (Landing.__proto__ || Object.getPrototypeOf(Landing)).call(this, app, [{ name: "fluffycloud", file: "assets/cloud.png" }, { name: "pixel", file: "assets/pixel.png" }]));
+        return _possibleConstructorReturn(this, (Landing.__proto__ || Object.getPrototypeOf(Landing)).call(this, app, [{ name: "fluffycloud", file: "assets/cloud.png" }, { name: "fog", file: "assets/fog.png" }, { name: "pixel", file: "assets/pixel.png" }]));
     }
 
     _createClass(Landing, [{
@@ -574,11 +574,8 @@ var Landing = function (_Scene) {
                 fontFamily: "Source Sans Pro",
                 fill: 0xFFFFFF,
                 fontSize: "28px",
-                fontWeight: 300,
-                align: "cemter"
+                fontWeight: 300
             });
-
-            this.createBridge();
 
             this.welcome.vector = new _physics.Vector(_config2.default.width / 2 - this.welcome.width / 2, _config2.default.height / 2 - 28);
             this.welcome.alpha = 0;
@@ -597,11 +594,12 @@ var Landing = function (_Scene) {
     }, {
         key: 'createBridge',
         value: function createBridge() {
+            var bridgeContainer = new PIXI.Container();
             var bridge = new PIXI.Graphics();
-            var pady = 400;
+            var pady = 1800;
 
             // Contour
-            bridge.lineStyle(20, 0x79c4a1, 1);
+            bridge.lineStyle(40, 0x181B18, 1);
             bridge.moveTo(-100, 300 + pady);
             bridge.quadraticCurveTo(200, 200 + pady, 300, 100 + pady);
             bridge.quadraticCurveTo(1000, 300 + pady, 1700, 100 + pady);
@@ -610,7 +608,7 @@ var Landing = function (_Scene) {
             bridge.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
 
             // Mid curve
-            bridge.lineStyle(10, 0x79c4a1, 1);
+            bridge.lineStyle(10, 0x181B18, 1);
             bridge.moveTo(-100, 400 + pady);
             bridge.quadraticCurveTo(100, 400 + pady, 300, 250 + pady);
             bridge.quadraticCurveTo(1000, 400 + pady, 1700, 250 + pady);
@@ -630,13 +628,11 @@ var Landing = function (_Scene) {
             }
             bridge.lineTo(1000, 200 + pady);
 
-            this.container.addChild(bridge);
+            bridgeContainer.addChild(bridge);
             this.bridge = bridge;
 
             // Mask
             var mask = new PIXI.Graphics();
-            mask.x = 0;
-            mask.y = 0;
             mask.lineStyle(0);
 
             mask.beginFill(0xFFFFFF, 0.5);
@@ -648,6 +644,9 @@ var Landing = function (_Scene) {
             mask.quadraticCurveTo(1000, 380 + pady, -100, 400 + pady);
 
             bridge.mask = mask;
+            bridgeContainer.addChild(mask);
+
+            return bridgeContainer;
         }
     }, {
         key: 'updateText',
@@ -681,16 +680,6 @@ var Landing = function (_Scene) {
                     this.overlay.endFill();
                     this.overlay.alpha = 1;
 
-                    var mask = new PIXI.Graphics();
-                    mask.beginFill(0);
-                    mask.moveTo(0, 0);
-                    mask.lineTo(0, _config2.default.height);
-                    mask.lineTo(_config2.default.width, _config2.default.height);
-                    mask.lineTo(_config2.default.width, 0);
-                    mask.lineTo(0, 0);
-                    mask.endFill();
-                    this.container.addChild(mask);
-
                     var startexture = _static2.default.getOne("pixel").resource.texture;
                     this.starsContainer = new PIXI.particles.ParticleContainer(MAX_STARS, { alpha: true });
                     this.starsContainer.width = SCENE_WIDTH;
@@ -717,18 +706,28 @@ var Landing = function (_Scene) {
                         this.clouds[_i2].alpha = Math.random();
                     }
 
+                    this.rippleSprite = new PIXI.Sprite(_static2.default.getOne("fog").resource.texture);
+                    this.rippleFilter = new PIXI.filters.DisplacementFilter(this.rippleSprite);
+
+                    this.rippleSprite.texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
+                    this.rippleSprite.vector = new _physics.Vector(0, 0, 1, 1);
+                    this.rippleSprite.vector.attach(this.rippleSprite);
+
+                    this.rippleContainer = new PIXI.Container();
+                    this.rippleContainer.addChild(this.starsContainer);
+                    this.rippleContainer.addChild(this.rippleSprite);
+                    this.rippleContainer.filters = [this.rippleFilter];
+                    this.rippleContainer.filterArea = new PIXI.Rectangle(0, _config2.default.height - 200, _config2.default.width, 200);
+
                     this.container.vector.setMinVelocity(0, -15.7);
                     this.container.vector.setMaxVelocity(0, 0);
                     this.container.vector.setMin(0, -(SCENE_HEIGHT - _config2.default.height));
 
-                    this.container.removeChild(this.welcome);
-
                     this.container.filters = [new PIXI.filters.AlphaFilter()];
-                    this.container.filterArea = new PIXI.Rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT);
-                    (_container = this.container).addChild.apply(_container, [this.background, this.starsContainer].concat(_toConsumableArray(this.clouds), [this.overlay]));
+                    this.container.filterArea = new PIXI.Rectangle(0, 0, _config2.default.width, _config2.default.height);
+                    (_container = this.container).addChild.apply(_container, [this.background, this.rippleContainer, this.createBridge()].concat(_toConsumableArray(this.clouds), [this.overlay]));
 
                     // End phase
-                    this.container.removeChild(mask);
                     this.vars.presenting = false;
                     this.vars.fading = true;
                 }
@@ -770,6 +769,7 @@ var Landing = function (_Scene) {
             this.stars.forEach(function (x) {
                 x.alpha = Math.random();
             });
+            this.rippleSprite && this.rippleSprite.vector.update();
         }
     }]);
 
