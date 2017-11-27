@@ -121,6 +121,14 @@ class Landing extends Scene {
         return bridgeContainer;
     }
 
+    createLaRonde() {
+        const laRondeContainer = new PIXI.Container();
+
+        
+
+        return laRondeContainer;
+    }
+
     updateText() {
         if (this.vars.texttimer > performance.now()) {
             this.welcome.alpha += 0.02;
@@ -142,9 +150,9 @@ class Landing extends Scene {
                 this.overlay = new PIXI.Graphics();
                 this.overlay.beginFill(0);
                 this.overlay.moveTo(0, 0);
-                this.overlay.lineTo(0, Config.height);
-                this.overlay.lineTo(Config.width, Config.height);
-                this.overlay.lineTo(Config.width, 0);
+                this.overlay.lineTo(0, SCENE_HEIGHT);
+                this.overlay.lineTo(SCENE_WIDTH, SCENE_HEIGHT);
+                this.overlay.lineTo(SCENE_WIDTH, 0);
                 this.overlay.lineTo(0, 0);
                 this.overlay.endFill();
                 this.overlay.alpha = 1;
@@ -189,6 +197,7 @@ class Landing extends Scene {
 
                 // End phase
                 this.vars.presenting = false;
+                this.vars.outing = false;
                 this.vars.fading = true;
             }
         }
@@ -200,15 +209,15 @@ class Landing extends Scene {
         this.firework.width = SCENE_WIDTH;
         this.firework.height = SCENE_HEIGHT;
 
-        const color = pcolor;
+        let color = pcolor;
         const texture = Static.getOne('pixel').resource.texture;
         for (let i = 0; i < FIREWORK_COUNT; i++) {
             const p = new PIXI.Sprite(texture);
             p.x = PX;
             p.y = PY;
-            p.width = Math.random() * 6;
+            p.width = Math.random() * 8;
             p.height = p.width;
-            p.tint = color;
+            p.tint = color++;
 
             let angle = Math.random() * Math.PI * 2;
             let velocity = Math.cos(Math.random() * Math.PI / 2) * velmod;
@@ -231,15 +240,21 @@ class Landing extends Scene {
     }
 
     fireworksCheck() {
-        if (!this.vars.fw1 && this.container.vector.y < this.vars.halfpan) {
+        if (!this.vars.fw1 && this.container.vector.y < this.vars.halfpan + 100) {
             this.vars.fw1 = true;
-            this.launchFirework(450, 1000, 1000);
-        } else if (!this.vars.fw2 && this.container.vector.y < this.vars.halfpan - 200) {
+            this.launchFirework(450, 800, 1000);
+        } else if (!this.vars.fw2 && this.container.vector.y < this.vars.halfpan - 100) {
             this.vars.fw2 = true;
-            this.launchFirework(1450, 1300, 1000, 25, 0xc854f9);
-        } else if (!this.vars.fw3 && this.container.vector.y < this.vars.halfpan - 500) {
+            this.launchFirework(1450, 1100, 1000, 25, 0xc854f9);
+        } else if (!this.vars.fw3 && this.container.vector.y < this.vars.halfpan - 200) {
             this.vars.fw3 = true;
-            this.launchFirework(1000, 1500, 1000, 42, 0x59f96f);
+            this.launchFirework(1000, 1300, 1000, 42, 0x59f96f);
+        } else if (!this.vars.fw4 && this.container.vector.y < this.vars.halfpan - 250) {
+            this.vars.fw4 = true;
+            this.launchFirework(700, 1500, 1000, 20, 0x99a9af);
+        } else if (!this.vars.fw5 && this.container.vector.y < this.vars.halfpan - 300) {
+            this.vars.fw5 = true;
+            this.launchFirework(1200, 1550, 1000, 30, 0x69f96f);
         }
     }
 
@@ -255,9 +270,21 @@ class Landing extends Scene {
         }
     }
 
+    fadeOut() {
+        this.overlay.alpha += 0.01;
+        if (this.overlay.alpha >= 1) {
+            _experiment.pause();
+        }
+    }
+
     updatePan() {
         if (this.container.vector.y < this.vars.halfpan) {
             this.container.vector.ay = .1;
+        } 
+
+        if (!this.vars.outing && this.container.vector.y <= -1400) {
+            this.overlay.alpha = 0;
+            this.vars.outing = true;
         }
 
         this.container.vector.update();
@@ -267,6 +294,7 @@ class Landing extends Scene {
         this.vars.presenting && this.updateText();
         this.vars.fading && this.updateFade();
         this.vars.panning && this.updatePan();
+        this.vars.outing && this.fadeOut();
 
         this.clouds.forEach(cloud => {
             cloud.vector.update();
